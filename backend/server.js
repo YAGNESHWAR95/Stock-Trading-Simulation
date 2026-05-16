@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 4000;
 
 // Use cors middleware
 app.use(cors({ 
-  origin: ["http://localhost:5173"], 
+  origin: ["http://localhost:5173","https://stock-trading-simulation.vercel.app"], 
   credentials: true 
 }));
 
