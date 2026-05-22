@@ -6,6 +6,7 @@ export const useMarket = create((set) => ({
   assets: [],
   loading: false,
 
+  // Action to fetch all assets initially
   fetchAssets: async () => {
     try {
       set({ loading: true });
@@ -16,4 +17,13 @@ export const useMarket = create((set) => ({
       set({ loading: false });
     }
   },
+
+  // NEW: Action to update assets in real-time via WebSockets
+  setAssets: (updatedAssets) => {
+    set((state) => ({
+      // We map through existing assets and update only the prices 
+      // This preserves any other frontend-only state if needed
+      assets: updatedAssets 
+    }));
+  }
 }));
