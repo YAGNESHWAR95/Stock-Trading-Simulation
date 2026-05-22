@@ -6,6 +6,7 @@ import cors from "cors";
 import http from "http"; // Required for Socket.io
 import { Server } from "socket.io"; // Socket.io server
 import { AssetModel } from "./models/AssetModel.js"; // Import your model
+import { AlertModel } from "./models/AlertModel.js"; // IMPORT ALERTS MODEL
 
 // Import Trading Platform APIs
 import { authRoute } from "./APIs/AuthAPI.js";
@@ -43,8 +44,23 @@ app.use("/market-api", marketRoute);
 app.use("/trader-api", traderRoute);
 app.use("/admin-api", adminRoute);
 
-// --- REAL-TIME PRICE ENGINE ---
-// This function simulates market movement every 5 seconds
+// --- SOCKET CONNECTION ROOM HANDLERS ---
+io.on("connection", (socket) => {
+  // Listen for the trader to register their unique user ID to join a private notification room
+  socket.on("join-user-room", (userId) => {
+    if (userId) {
+      socket.join(userId);
+      console.log(`Trader joined authenticated alert room channel: ${userId}`);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("A terminal client left the live market network feed.");
+  });
+});
+
+// --- REAL-TIME PRICE ENGINE & PRICE ALERT INTERCEPTOR ---
+// This function simulates market movement and checks pending user alerts every 5 seconds
 const startPriceSimulation = () => {
   setInterval(async () => {
     try {
@@ -64,9 +80,36 @@ const startPriceSimulation = () => {
         };
       });
 
-      // Update Database (Bulk update for performance)
+      // Update Database and simultaneously evaluate custom alert trigger rule boundaries
       for (let update of updates) {
+        // A. Standard update statement matching your performance parameters
         await AssetModel.updateOne({ _id: update._id }, { currentPrice: update.currentPrice });
+
+        // B. Query the active untriggered rules belonging exclusively to this specific asset index
+        const pendingRules = await AlertModel.find({ asset: update._id, isTriggered: false });
+        
+        for (let rule of pendingRules) {
+          let shouldTrigger = false;
+
+          if (rule.condition === "ABOVE" && update.currentPrice >= rule.targetPrice) {
+            shouldTrigger = true;
+          } else if (rule.condition === "BELOW" && update.currentPrice <= rule.targetPrice) {
+            shouldTrigger = true;
+          }
+
+          if (shouldTrigger) {
+            // Persistent flag update to mark completion
+            rule.isTriggered = true;
+            await rule.save();
+
+            // Direct real-time push to the user's isolated socket private room channel
+            io.to(rule.user.toString()).emit("price-alert-notification", {
+              message: `ALERT: ${update.symbol} crossed your setup target of $${rule.targetPrice}!`,
+              symbol: update.symbol,
+              currentPrice: update.currentPrice
+            });
+          }
+        }
       }
 
       // 3. Broadcast new prices to all connected users

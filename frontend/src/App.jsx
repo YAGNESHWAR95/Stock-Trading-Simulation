@@ -19,6 +19,12 @@ import AssetByID from "./components/AssetByID";
 import TraderDashboard from "./components/TraderDashboard";
 import AdminDashboard from "./components/AdminDashboard";
 
+// New Feature Extensions Components
+import DashboardSummary from "./components/DashboardSummary";
+import TradingHistory from "./components/TradingHistory";
+import Leaderboard from "./components/Leaderboard";
+import PriceAlerts from "./components/PriceAlerts";
+
 // main app function
 function App() {
   // create the router
@@ -30,7 +36,7 @@ function App() {
       children: [
         {
           path: "",
-          element: <Home />, // Or you can change this to render <Market /> directly
+          element: <Home />,
         },
         {
           path: "register",
@@ -63,6 +69,24 @@ function App() {
               <TraderDashboard />
             </ProtectedRoute>
           ),
+          children: [
+            {
+              path: "", // Default view when landing on /trader-dashboard
+              element: <DashboardSummary />,
+            },
+            {
+              path: "history", // /trader-dashboard/history
+              element: <TradingHistory />,
+            },
+            {
+              path: "leaderboard", // /trader-dashboard/leaderboard
+              element: <Leaderboard />,
+            },
+            {
+              path: "alerts", // /trader-dashboard/alerts
+              element: <PriceAlerts />,
+            },
+          ],
         },
         {
           path: "admin-dashboard",

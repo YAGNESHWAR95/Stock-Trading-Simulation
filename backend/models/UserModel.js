@@ -4,18 +4,24 @@ const userSchema = new Schema(
   {
     firstName: { type: String, required: [true, "First name is required"] },
     lastName: { type: String },
+    username: { 
+      type: String, 
+      required: [true, "Username is required"], 
+      unique: true,
+      trim: true 
+    },
     email: { 
         type: String, 
         required: [true, "Email is required"], 
         unique: true,
-        lowercase: true, // Prevents "User@Email.com" vs "user@email.com" issues
+        lowercase: true,
         trim: true 
     },
     password: { type: String, required: [true, "Password is required"] },
     role: {
       type: String,
       enum: ["TRADER", "ADMIN"],
-      default: "TRADER", // Added default to ensure every user has a role
+      default: "TRADER",
       required: [true, "Role is required"],
     },
     walletBalance: {

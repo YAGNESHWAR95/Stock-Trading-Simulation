@@ -1,74 +1,98 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import { UserModel } from "../models/UserModel.js"; // Updated to the new trading app model
+import { UserModel } from "../models/UserModel.js"; 
 import { config } from 'dotenv';
+
 config();
 
-// Register function
+/**
+ * Register a new User Profile
+ * Handles validating structural inputs, hashing plain text passwords, 
+ * and persistent storage write rules.
+ * * @param {Object} userObj - Raw user request payload containing name fields, email, password, etc.
+ * @returns {Object} Newly created user object without password property
+ */
 export const register = async (userObj) => {
-  // Create document
+  // Create instance model document
   const userDoc = new UserModel(userObj);
   
-  // Validate for empty passwords and required fields
+  // Validate schema layout constraints for empty strings or missing fields before execution saves
   await userDoc.validate();
   
-  // Hash and replace plain password
+  // Hash and securely swap raw string credentials (10 rounds work factor)
   userDoc.password = await bcrypt.hash(userDoc.password, 10);
   
-  // Save to database
+  // Save securely to your MongoDB collection cluster
   const created = await userDoc.save();
   
-  // Convert document to object to remove password
+  // Convert document entity instance to a plain Javascript object
   const newUserObj = created.toObject();
   
-  // Remove password from the response
+  // Strip password reference tracking strings before returning object data to route layer
   delete newUserObj.password;
   
-  // Return user obj without password
   return newUserObj;
 };
 
-// Authenticate function
+/**
+ * Authenticates a User's Session Request
+ * Cross-checks passwords via cryptographic comparison, enforces lowercase email matching, 
+ * validates account active statuses, and returns custom token sessions.
+ * * @param {Object} credentials - Input containing { email, password }
+ * @returns {Object} { token, user } payload containing session tokens and active user records
+ */
 export const authenticate = async ({ email, password }) => {
-  // Check user with email
-  const user = await UserModel.findOne({ email });
+  if (!email || !password) {
+    const err = new Error("Email and password fields are required");
+    err.status = 400;
+    throw err;
+  }
+
+  // Coerce input string to match lowercase indexing to ensure predictable lookup tracking matching
+  const normalEmail = email.trim().toLowerCase();
+
+  // Look up user document profile matching email criteria
+  const user = await UserModel.findOne({ email: normalEmail });
   if (!user) {
-    const err = new Error("Invalid email");
+    const err = new Error("Invalid email address provided");
     err.status = 401;
     throw err;
   }
 
-  // Compare passwords
+  // Cryptographically check incoming raw text against stored bcrypt hash strings
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    const err = new Error("Invalid password");
+    const err = new Error("Invalid password matching failed");
     err.status = 401;
     throw err;
   }
 
-  // Check isActive state (in case admin suspended the trader)
+  // Block execution loops if active account flag is suspended by Admin dashboards
   if (user.isActive === false) {
-    const err = new Error("Your account is blocked. Please contact Admin.");
+    const err = new Error("Your account has been blocked. Please contact Platform Administration.");
     err.status = 403;
     throw err;
   }
 
-  // Generate Token
-  // Added walletBalance to the payload so the frontend can quickly reference the user's available funds
+  // Generate sign session payload token with essential state attributes injected 
+  // Injects current wallet balances for immediate access down stream
   const token = jwt.sign(
     { 
       _id: user._id, 
       role: user.role, 
       email: user.email, 
       firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
       walletBalance: user.walletBalance 
     }, 
-    process.env.JWT_SECRET, 
+    process.env.JWT_SECRET || "fallback_jwt_secret_phrase", 
     {
-      expiresIn: "1d", // Typically you want a longer or refreshable session for a trading app
+      expiresIn: "1d", // Session expiration life limit configuration settings
     }
   );
 
+  // Convert schema response to raw JavaScript entity structure
   const userObj = user.toObject();
   delete userObj.password;
 
