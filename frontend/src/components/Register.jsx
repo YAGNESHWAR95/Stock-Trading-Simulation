@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import baseAPI from "./config/baseAPI"; // 👈 Changed from plain axios to your custom pre-configured instance
+import baseAPI from "./config/baseAPI"; 
 import toast from "react-hot-toast";
 
 export default function Register() {
@@ -15,14 +15,21 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // 1. Enforce Regulatory Guidelines Verification First
     if (!acceptedTerms) {
       toast.error("Please read and accept the SEBI guidelines to proceed.");
       return;
     }
 
+    // 2. Client-Side Password Length Safeguard Interceptor
+    if (formData.password.length < 8) {
+      toast.error("Password is too short! It must be at least 8 characters long.");
+      return; // Stops the submission pipeline instantly
+    }
+
     try {
-      // 1. Use baseAPI instead of raw axios
-      // 2. Updated the path to match your actual backend endpoint: "/api/auth/register"
+      // Execute registration query over our base instance layout configuration
       await baseAPI.post("/api/auth/register", formData);
       
       toast.success("Registration successful! Welcome to TradePro.");
@@ -63,7 +70,7 @@ export default function Register() {
         />
         
         <input 
-          type="password" placeholder="Password" required 
+          type="password" placeholder="Password (Min. 8 chars)" required 
           className="border p-2.5 w-full rounded-lg focus:ring-2 focus:ring-blue-400 outline-none transition" 
           value={formData.password} 
           onChange={e => setFormData({...formData, password: e.target.value})} 
@@ -78,7 +85,6 @@ export default function Register() {
             To ensure investor protection, SEBI requires all market participants to review the standard operating procedures and risk disclosures.
           </p>
           
-          {/* Link to your PDF file in the public folder */}
           <a 
             href="/sebi-guidelines.pdf" 
             target="_blank" 
@@ -101,7 +107,7 @@ export default function Register() {
             checked={acceptedTerms}
             onChange={(e) => setAcceptedTerms(e.target.checked)}
           />
-          <label htmlFor="accept-terms" className="text-xs text-gray-600 leading-snug">
+          <label htmlFor="accept-terms" className="text-xs text-gray-600 leading-snug cursor-pointer select-none">
             I confirm that I have downloaded/read the SEBI guidelines and I **Accept and Continue** with this virtual trading simulation.
           </label>
         </div>
@@ -111,7 +117,7 @@ export default function Register() {
           disabled={!acceptedTerms}
           className={`w-full py-3 rounded-xl font-bold text-white transition-all shadow-md ${
             acceptedTerms 
-            ? "bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95" 
+            ? "bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95 cursor-pointer" 
             : "bg-gray-300 cursor-not-allowed"
           }`}
         >

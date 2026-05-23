@@ -13,19 +13,47 @@ config();
  * @returns {Object} Newly created user object without password property
  */
 export const register = async (userObj) => {
-  // Create instance model document
-  const userDoc = new UserModel(userObj);
+  const { email, password, firstName, lastName } = userObj;
+
+  if (!email || !password || !firstName) {
+    const err = new Error("Required fields are missing (Email, Password, and First Name are mandatory).");
+    err.status = 400;
+    throw err;
+  }
+
+  // 1. Prevent duplicate email accounts before invoking document instantiation rules
+  const normalEmail = email.trim().toLowerCase();
+  const existingUser = await UserModel.findOne({ email: normalEmail });
+  if (existingUser) {
+    const err = new Error("An account with this email address already exists.");
+    err.status = 400;
+    throw err;
+  }
+
+  // 2. Cryptographically hash the plain-text credentials BEFORE creating the user model document
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+  // 3. Compute a fallback username if your backend schema still strictly enforces it
+  const computedUsername = userObj.username || `${firstName.trim()}_${lastName?.trim() || ""}`.replace(/\s+/g, "").toLowerCase();
+
+  // 4. Instantiate model document with complete and structured parameters
+  const userDoc = new UserModel({
+    ...userObj,
+    email: normalEmail,
+    password: hashedPassword,
+    username: computedUsername,
+    role: userObj.role || "TRADER",
+    walletBalance: userObj.walletBalance || 100000.00
+  });
   
-  // Validate schema layout constraints for empty strings or missing fields before execution saves
+  // 5. Run validation safety check on completely mapped attributes
   await userDoc.validate();
   
-  // Hash and securely swap raw string credentials (10 rounds work factor)
-  userDoc.password = await bcrypt.hash(userDoc.password, 10);
-  
-  // Save securely to your MongoDB collection cluster
+  // 6. Save securely to your MongoDB collection cluster
   const created = await userDoc.save();
   
-  // Convert document entity instance to a plain Javascript object
+  // Convert document entity instance to a plain JavaScript object
   const newUserObj = created.toObject();
   
   // Strip password reference tracking strings before returning object data to route layer
@@ -54,7 +82,7 @@ export const authenticate = async ({ email, password }) => {
   // Look up user document profile matching email criteria
   const user = await UserModel.findOne({ email: normalEmail });
   if (!user) {
-    const err = new Error("Invalid email address provided");
+    const err = new Error("Invalid email or password combination.");
     err.status = 401;
     throw err;
   }
@@ -62,7 +90,7 @@ export const authenticate = async ({ email, password }) => {
   // Cryptographically check incoming raw text against stored bcrypt hash strings
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    const err = new Error("Invalid password matching failed");
+    const err = new Error("Invalid email or password combination.");
     err.status = 401;
     throw err;
   }
