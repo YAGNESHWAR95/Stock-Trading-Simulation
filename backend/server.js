@@ -25,13 +25,13 @@ const server = http.createServer(app);
 // 2. Initialize Socket.io
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173","https://stock-trading-simulation.vercel.app"],
+    origin: ["http://localhost:5173",process.env.FRONTEND_UR],
     credentials: true
   }
 });
 
 app.use(cors({ 
-  origin: ["http://localhost:5173","https://stock-trading-simulation.vercel.app"], 
+  origin: ["http://localhost:5173",process.env.FRONTEND_URL], 
   credentials: true 
 }));
 
