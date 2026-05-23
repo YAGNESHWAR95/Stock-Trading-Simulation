@@ -5,9 +5,10 @@ export const useAuth = create((set) => ({
   currentUser: null,
   isAuthenticated: false,
   loading: false,
+  isCheckingAuth: true, // 👈 Initialized as true so page refreshes trigger the loading screen immediately
   error: null,
 
-  // LOGIN
+  // 1. LOGIN
   login: async (userCreds) => {
     try {
       set({ loading: true, error: null });
@@ -17,7 +18,7 @@ export const useAuth = create((set) => ({
       set({
         loading: false,
         isAuthenticated: true,
-        currentUser: res.data.payload,
+        currentUser: res.data.payload || res.data.user || res.data,
       });
     } catch (err) {
       set({
@@ -31,7 +32,7 @@ export const useAuth = create((set) => ({
     }
   },
 
-  // LOGOUT
+  // 2. LOGOUT
   logout: async () => {
     try {
       await baseAPI.post("/api/auth/logout");
@@ -45,20 +46,40 @@ export const useAuth = create((set) => ({
     }
   },
 
-  // CHECK AUTH SESSION
+  // 3. CHECK AUTH SESSION (Persists the user on page refresh)
   checkAuth: async () => {
     try {
+      set({ isCheckingAuth: true });
+      
       const res = await baseAPI.get("/api/auth/check-auth");
+      const user = res.data.user || res.data.payload || res.data;
 
       set({
-        currentUser: res.data.user || res.data.payload,
-        isAuthenticated: true,
+        currentUser: user,
+        isAuthenticated: !!user, // Flips to true if user object is valid
+        isCheckingAuth: false,  // 👈 Let ProtectedRoute know verification is complete
       });
     } catch (err) {
+      console.error("Session restoration check failed:", err.message);
       set({
         currentUser: null,
         isAuthenticated: false,
+        isCheckingAuth: false,  // 👈 Turn off loading state even if no valid cookie token exists
       });
     }
+  },
+
+  // 4. UPDATE WALLET BALANCE (Keeps header/sidebar synchronized in real time)
+  updateWalletBalance: (newBalance) => {
+    set((state) => {
+      if (!state.currentUser) return state; // Safety guard if no user profile is active
+      
+      return {
+        currentUser: {
+          ...state.currentUser,
+          walletBalance: Number(newBalance), // Enforce numeric type formatting
+        },
+      };
+    });
   },
 }));

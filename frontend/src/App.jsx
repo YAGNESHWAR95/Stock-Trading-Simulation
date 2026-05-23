@@ -1,7 +1,10 @@
 // import all the components and stuff
+import { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-3
+import { useAuth } from "./store/authStore"; // Adjust this path if your store folder is located somewhere else
+
+
 // Layout & Utility Components
 import RootLayout from "./components/RootLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -27,6 +30,15 @@ import PriceAlerts from "./components/PriceAlerts";
 
 // main app function
 function App() {
+  const { checkAuth } = useAuth();
+
+  // Trigger the authentication verify check as soon as the React app mounts/refreshes
+  useEffect(() => {
+    if (checkAuth) {
+      checkAuth();
+    }
+  }, [checkAuth]);
+
   // create the router
   const routerObj = createBrowserRouter([
     {
@@ -96,6 +108,7 @@ function App() {
             </ProtectedRoute>
           ),
         },
+       
         {
           path: "unauthorized",
           element: <Unauthorized />,
