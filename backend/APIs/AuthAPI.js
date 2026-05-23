@@ -30,7 +30,12 @@ authRoute.get("/check-auth", verifyToken("TRADER", "ADMIN"), async (req, res) =>
   res.status(200).json({ message: "Authenticated", payload: user });
 });
 
-authRoute.get("/logout", (req, res) => {
-  res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "none" });
+authRoute.post("/logout", (req, res) => {
+  res.clearCookie("token", { 
+    httpOnly: true, 
+    secure: true, 
+    sameSite: "none",
+    path: "/" // 👈 Explicit path boundary ensures browser flushes the cookie cleanly
+  });
   res.status(200).json({ message: "Logged out" });
 });

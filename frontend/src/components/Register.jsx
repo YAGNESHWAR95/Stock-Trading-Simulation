@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
-import BASE_URL from "./config/baseAPI";
+import baseAPI from "./config/baseAPI"; // 👈 Changed from plain axios to your custom pre-configured instance
 import toast from "react-hot-toast";
 
 export default function Register() {
@@ -22,7 +21,10 @@ export default function Register() {
     }
 
     try {
-      await axios.post(`${BASE_URL}/auth-api/register`, formData);
+      // 1. Use baseAPI instead of raw axios
+      // 2. Updated the path to match your actual backend endpoint: "/api/auth/register"
+      await baseAPI.post("/api/auth/register", formData);
+      
       toast.success("Registration successful! Welcome to TradePro.");
       navigate("/login");
     } catch (err) {
