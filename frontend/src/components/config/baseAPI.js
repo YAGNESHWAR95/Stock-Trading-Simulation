@@ -1,6 +1,11 @@
-// Determines the base URL depending on the environment
-const BASE_URL = import.meta.env.MODE === "development" 
-  ? "http://localhost:4000" 
-  : "https://stock-trading-simulation-ld2b.onrender.com"; // Your live Render backend
+import axios from "axios";
 
-export default BASE_URL;
+// Clean base URL without any '/api' extensions
+const apiURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+
+const baseAPI = axios.create({
+  baseURL: apiURL,
+  withCredentials: true 
+});
+
+export default baseAPI;

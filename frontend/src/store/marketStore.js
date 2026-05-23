@@ -1,29 +1,38 @@
 import { create } from "zustand";
-import axios from "axios";
-import BASE_URL from "../components/config/baseAPI";
+import baseAPI from "../components/config/baseAPI";
 
 export const useMarket = create((set) => ({
-  assets: [],
+  assets: [], 
   loading: false,
+  error: null,
 
-  // Action to fetch all assets initially
+  // Action to fetch all assets initially via REST
   fetchAssets: async () => {
     try {
-      set({ loading: true });
-      const res = await axios.get(`${BASE_URL}/market-api/assets`);
-      set({ assets: res.data.payload, loading: false });
+      set({ loading: true, error: null });
+      
+      // Target the new plural endpoint matching app.use("/api/market", marketRoute)
+      const res = await baseAPI.get("/api/market/assets");
+      
+      const incomingData = res.data?.payload || res.data;
+      
+      set({ 
+        assets: Array.isArray(incomingData) ? incomingData : [], 
+        loading: false 
+      });
     } catch (err) {
-      console.error("Failed to fetch market data", err);
-      set({ loading: false });
+      console.error("Error fetching market options:", err);
+      set({ 
+        assets: [], 
+        loading: false, 
+        error: err.response?.data?.message || "Failed to fetch assets" 
+      });
     }
   },
 
-  // NEW: Action to update assets in real-time via WebSockets
-  setAssets: (updatedAssets) => {
-    set((state) => ({
-      // We map through existing assets and update only the prices 
-      // This preserves any other frontend-only state if needed
-      assets: updatedAssets 
-    }));
-  }
+  // Action to cleanly sync updated assets downstream from WebSockets
+  setAssets: (updatedAssets) => set({ 
+    assets: Array.isArray(updatedAssets) ? updatedAssets : [],
+    loading: false 
+  })
 }));

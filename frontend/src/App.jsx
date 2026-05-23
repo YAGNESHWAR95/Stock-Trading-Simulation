@@ -1,7 +1,7 @@
 // import all the components and stuff
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-
+3
 // Layout & Utility Components
 import RootLayout from "./components/RootLayout";
 import ProtectedRoute from "./components/ProtectedRoute";

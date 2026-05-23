@@ -25,13 +25,13 @@ const server = http.createServer(app);
 // 2. Initialize Socket.io
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173", "https://stock-trading-simulation.vercel.app"],
+    origin: ["http://localhost:5173","https://stock-trading-simulation.vercel.app"],
     credentials: true
   }
 });
 
 app.use(cors({ 
-  origin: ["http://localhost:5173", "https://stock-trading-simulation.vercel.app"], 
+  origin: ["http://localhost:5173","https://stock-trading-simulation.vercel.app"], 
   credentials: true 
 }));
 
@@ -39,10 +39,11 @@ app.use(exp.json());
 app.use(cookieParser());
 
 // Connect APIs
-app.use("/auth-api", authRoute);
-app.use("/market-api", marketRoute);
-app.use("/trader-api", traderRoute);
-app.use("/admin-api", adminRoute);
+// Open your backend server.js and change these lines:
+app.use("/api/auth", authRoute);     
+app.use("/api/market", marketRoute); 
+app.use("/api/trader", traderRoute); 
+app.use("/api/admin", adminRoute);   
 
 // --- SOCKET CONNECTION ROOM HANDLERS ---
 io.on("connection", (socket) => {
