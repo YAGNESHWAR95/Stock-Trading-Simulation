@@ -63,6 +63,20 @@ export default function Login() {
           Log In
         </button>
       </form>
+
+      <div className="mt-4">
+        <button
+          type="button"
+          onClick={() => window.location.href = `${import.meta.env.VITE_BACKEND_URL || "http://localhost:4000"}/api/auth/google`}
+          className="w-full inline-flex items-center justify-center gap-2 border border-gray-300 rounded py-2 text-gray-700 hover:bg-gray-50 transition"
+        >
+          Continue with Google
+        </button>
+      </div>
+
+      <p className="text-center mt-4 text-sm">
+        <Link to="/forgot-password" className="text-blue-600 hover:underline">Forgot your password?</Link>
+      </p>
       <p className="text-center mt-4 text-sm">
         Don't have an account? <Link to="/register" className="text-blue-600 hover:underline">Sign up</Link>
       </p>

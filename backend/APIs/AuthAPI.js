@@ -1,5 +1,5 @@
 import exp from "express";
-import { register, authenticate } from "../services/authService.js";
+import { register, authenticate, forgotPassword, resetPassword, getGoogleAuthUrl, googleLoginOrRegister } from "../services/authService.js";
 import { verifyToken } from "../middlewares/verifyToken.js";
 import { UserModel } from "../models/UserModel.js";
 
@@ -22,6 +22,48 @@ authRoute.post("/login", async (req, res, next) => {
       maxAge: 24 * 60 * 60 * 1000
     });
     res.status(200).json({ message: "Login successful", payload: user });
+  } catch (err) { next(err); }
+});
+
+authRoute.get("/google", (req, res) => {
+  try {
+    const authUrl = getGoogleAuthUrl();
+    res.redirect(authUrl);
+  } catch (err) {
+    res.status(500).json({ message: "Unable to start Google sign-in." });
+  }
+});
+
+authRoute.get("/google/callback", async (req, res, next) => {
+  try {
+    const { token } = await googleLoginOrRegister(req.query.code);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    res.redirect(`${frontendUrl}/market`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+authRoute.post("/forgot-password", async (req, res, next) => {
+  try {
+    const token = await forgotPassword(req.body.email);
+    res.status(200).json({
+      message: "Password reset token generated.",
+      payload: { token },
+    });
+  } catch (err) { next(err); }
+});
+
+authRoute.post("/reset-password", async (req, res, next) => {
+  try {
+    await resetPassword(req.body);
+    res.status(200).json({ message: "Password has been reset successfully." });
   } catch (err) { next(err); }
 });
 

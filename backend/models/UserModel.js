@@ -12,7 +12,9 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true }, // Keeping it if used elsewhere
   role: { type: String, enum: ["TRADER", "ADMIN"], default: "TRADER" },
   walletBalance: { type: Number, default: 100000.00 },
-  isActive: { type: Boolean, default: true }
+  isActive: { type: Boolean, default: true },
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date }
 }, { timestamps: true });
 
 // 👈 FIX 2: Ensure this matches the exact named export your service is importing
