@@ -23,7 +23,7 @@ export default function DashboardSummary() {
   return (
     <div className="space-y-6">
       {/* Metric Scorecards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-xl border shadow-sm">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Available Wallet</p>
           <p className="text-2xl font-mono font-bold mt-2 text-gray-800">${summary.walletBalance?.toLocaleString()}</p>
@@ -49,7 +49,8 @@ export default function DashboardSummary() {
         <div className="p-4 border-b bg-gray-50">
           <h3 className="font-bold text-gray-700">Open Equity Positions</h3>
         </div>
-        <table className="w-full text-left border-collapse">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-100/70 text-xs font-bold text-gray-400 uppercase tracking-wider border-b">
               <th className="p-4">Asset</th>
@@ -75,5 +76,6 @@ export default function DashboardSummary() {
         </table>
       </div>
     </div>
+  </div>
   );
 }

@@ -12,14 +12,14 @@ export default function Header() {
 
   return (
     <header className="bg-gray-900 text-white shadow-md">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+      <div className="container mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
         {/* Logo */}
         <Link to="/" className="text-2xl font-bold text-green-400 tracking-wide">
           TradePro
         </Link>
 
         {/* Navigation Links */}
-        <nav className="flex items-center gap-6">
+        <nav className="flex flex-wrap items-center gap-3 justify-end">
           <Link to="/market" className="hover:text-green-400 transition">Market</Link>
 
           {isAuthenticated ? (

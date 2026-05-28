@@ -52,7 +52,7 @@ export default function Market() {
     <div className="p-4">
       <h1 className="text-3xl font-bold mb-6">Live Market</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-flow-col auto-cols-[minmax(280px,1fr)] gap-6 overflow-x-auto md:grid-flow-row md:grid-cols-3 lg:grid-cols-4 md:auto-cols-auto snap-x snap-mandatory hide-scrollbar py-2">
         {(assets || []).map((asset) => {
           const prevPrice = prevPrices[asset._id];
 

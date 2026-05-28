@@ -21,13 +21,13 @@ export default function TraderDashboard() {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Navigation Tab Header Bar */}
-        <div className="bg-white p-4 rounded-xl shadow-sm border flex flex-wrap gap-3 items-center justify-between">
+        <div className="bg-white p-4 rounded-xl shadow-sm border flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center space-x-2">
             <span className="text-2xl">💼</span>
             <h2 className="text-xl font-bold text-gray-800">Trader Command Center</h2>
           </div>
           
-          <nav className="flex space-x-2">
+          <nav className="flex flex-wrap gap-2 justify-center sm:justify-end">
             <Link to="/trader-dashboard" className={navStyles("")}>
               Dashboard Summary
             </Link>
@@ -40,6 +40,7 @@ export default function TraderDashboard() {
             <Link to="/trader-dashboard/alerts" className={navStyles("alerts")}>
               Price Alerts
             </Link>
+            <Link to="/trader-dashboard/news" className={navStyles("news")}>Market News</Link>
             <Link to="/market" className="px-4 py-2 font-medium rounded-lg bg-green-50 text-green-700 hover:bg-green-100">
               Go to Live Market 📈
             </Link>

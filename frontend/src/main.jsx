@@ -9,8 +9,18 @@ import App from './App.jsx'
 // Vercel to send the JWT token to Render.
 axios.defaults.withCredentials = true;
 
-createRoot(document.getElementById('root')).render(
+const root = createRoot(document.getElementById('root'));
+root.render(
   <StrictMode>
     <App />
   </StrictMode>,
-)
+);
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/sw.js')
+      .then(() => console.log('Service worker registered.'))
+      .catch((err) => console.warn('Service worker registration failed:', err));
+  });
+}

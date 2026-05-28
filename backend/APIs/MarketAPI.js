@@ -2,6 +2,7 @@ import exp from "express";
 import { AssetModel } from "../models/AssetModel.js";
 import { UserModel } from "../models/UserModel.js";
 import { verifyToken } from "../middlewares/verifyToken.js";
+import { getMarketNewsFeed } from "../services/newsService.js";
 
 export const marketRoute = exp.Router();
 
@@ -152,6 +153,18 @@ marketRoute.post("/trade", verifyToken("TRADER", "ADMIN"), async (req, res, next
     next(err);
   }
 });
-
+/**
+ * @route   GET /api/market/news
+ * @desc    Get the latest market sentiment news feed and aggregate score
+ * @access  Public
+ */
+marketRoute.get("/news", async (req, res, next) => {
+  try {
+    const payload = await getMarketNewsFeed();
+    res.status(200).json({ message: "Market news feed", payload });
+  } catch (err) {
+    next(err);
+  }
+});
 // Default export ties into your backend server.js mount smoothly
 export default marketRoute;

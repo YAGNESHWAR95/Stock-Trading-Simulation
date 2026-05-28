@@ -29,6 +29,7 @@ import DashboardSummary from "./components/DashboardSummary";
 import TradingHistory from "./components/TradingHistory";
 import Leaderboard from "./components/Leaderboard";
 import PriceAlerts from "./components/PriceAlerts";
+import MarketNews from "./components/MarketNews";
 
 // main app function
 function App() {
@@ -107,6 +108,10 @@ function App() {
             {
               path: "alerts", // /trader-dashboard/alerts
               element: <PriceAlerts />,
+            },
+            {
+              path: "news", // /trader-dashboard/news
+              element: <MarketNews />,
             },
           ],
         },
