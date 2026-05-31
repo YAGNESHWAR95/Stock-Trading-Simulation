@@ -363,10 +363,10 @@ traderRoute.post("/ask-ai", verifyToken("TRADER", "ADMIN"), async (req, res) => 
 
 // Conditional stop-loss / take-profit order endpoints
 traderRoute.post("/conditional-orders", verifyToken("TRADER"), async (req, res) => {
-  const { assetId, targetPrice, quantity, triggerType } = req.body;
+  const { assetId, triggerPrice, quantity, triggerType } = req.body;
 
-  if (!assetId || !targetPrice || !quantity || !triggerType) {
-    return res.status(400).json({ message: "Please provide assetId, quantity, targetPrice, and triggerType." });
+  if (!assetId || !triggerPrice || !quantity || !triggerType) {
+    return res.status(400).json({ message: "Please provide assetId, quantity, triggerPrice, and triggerType." });
   }
 
   try {

@@ -70,7 +70,7 @@ if (typeof window !== 'undefined') {
   try {
     const store = useNews.getState();
     store.startPolling();
-  } catch (e) {
+  } catch {
     // ignore when used in SSR or tests
   }
 }

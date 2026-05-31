@@ -24,7 +24,7 @@ export default function BottomNav() {
 
   const unreadCount = useNews((s) => s.unreadCount);
 
-  const filteredNavItems = isAuthenticated ? navItems : navItems.filter((item) => item.label !== "Ask AI");
+  const filteredNavItems = navItems;
 
   return (
     <div className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 backdrop-blur-lg shadow-xl">

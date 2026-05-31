@@ -21,6 +21,7 @@ export default function Header() {
         {/* Navigation Links */}
         <nav className="flex flex-wrap items-center gap-3 justify-end">
           <Link to="/market" className="hover:text-green-400 transition">Market</Link>
+          <Link to="/ai" className="hover:text-green-400 transition">Ask AI</Link>
 
           {isAuthenticated ? (
             <>
@@ -28,10 +29,7 @@ export default function Header() {
               {currentUser?.role === "ADMIN" ? (
                 <Link to="/admin-dashboard" className="hover:text-green-400 transition">Admin Panel</Link>
               ) : (
-                <>
-                  <Link to="/trader-dashboard" className="hover:text-green-400 transition">Dashboard</Link>
-                  <Link to="/ai" className="hover:text-green-400 transition">Ask AI</Link>
-                </>
+                <Link to="/trader-dashboard" className="hover:text-green-400 transition">Dashboard</Link>
               )}
               
               {/* User Info & Logout */}

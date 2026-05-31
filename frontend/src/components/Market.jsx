@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useMarket } from "../store/marketStore";
 import { useAuth } from "../store/authStore";
@@ -11,12 +11,12 @@ export default function Market() {
   const { assets, fetchAssets, loading, setAssets } = useMarket();
   const { isAuthenticated, currentUser } = useAuth();
   const [prevPrices, setPrevPrices] = useState({});
-  const [search, setSearch] = useState("");
   const [watchlist, setWatchlist] = useState([]);
   const [savingWatchId, setSavingWatchId] = useState(null);
   const [selectedCompare, setSelectedCompare] = useState([]);
 
-  const loadWatchlist = async () => {
+  const loadWatchlist = useCallback(async () => {
+    await Promise.resolve();
     if (!isAuthenticated) return setWatchlist([]);
 
     try {
@@ -25,7 +25,7 @@ export default function Market() {
     } catch (err) {
       console.error("Failed to fetch watchlist", err);
     }
-  };
+  }, [isAuthenticated]);
 
   useEffect(() => {
     fetchAssets();
@@ -58,7 +58,7 @@ export default function Market() {
       socket.off("price-alert-notification");
       socket.off("conditional-order-triggered");
     };
-  }, []);
+  }, [fetchAssets, setAssets]);
 
   useEffect(() => {
     if (!isAuthenticated || !currentUser?._id) return;
@@ -67,7 +67,7 @@ export default function Market() {
     }
     socket.emit("join-user-room", currentUser._id);
     loadWatchlist();
-  }, [isAuthenticated, currentUser]);
+  }, [isAuthenticated, currentUser, loadWatchlist]);
 
   const handleToggleWatchlist = async (assetId) => {
     if (!isAuthenticated) {
@@ -108,18 +108,7 @@ export default function Market() {
     });
   };
 
-  const filteredAssets = useMemo(() => {
-    const normalized = search.trim().toLowerCase();
-    return assets
-      .filter((asset) => {
-        if (!normalized) return true;
-        return (
-          asset.symbol.toLowerCase().includes(normalized) ||
-          asset.name.toLowerCase().includes(normalized)
-        );
-      })
-      .sort((a, b) => b.currentPrice - a.currentPrice);
-  }, [assets, search]);
+
 
   // safer loading check
   if (loading && assets.length === 0) {
@@ -146,14 +135,12 @@ export default function Market() {
             <div className="rounded-3xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
               Compare: {selectedCompare.length} / 3
             </div>
-            {isAuthenticated && (
-              <Link
-                to="/ai"
-                className="rounded-3xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition"
-              >
-                Ask AI Assistant
-              </Link>
-            )}
+            <Link
+              to="/ai"
+              className="rounded-3xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition"
+            >
+              Ask AI Assistant
+            </Link>
           </div>
         </div>
       </div>

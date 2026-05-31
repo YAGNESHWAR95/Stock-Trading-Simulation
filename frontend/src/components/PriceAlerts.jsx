@@ -15,6 +15,7 @@ export default function PriceAlerts() {
 
   // 1. Fetch active alerts and market choices simultaneously on layout mount
   const loadAlertsWorkspace = async () => {
+    await Promise.resolve();
     try {
       setLoading(true);
       const [alertsRes, marketRes] = await Promise.all([

@@ -18,6 +18,7 @@ export default function ConditionalOrders() {
   const [submitting, setSubmitting] = useState(false);
 
   const refreshData = async () => {
+    await Promise.resolve();
     try {
       setLoading(true);
       const [assetsRes, ordersRes] = await Promise.all([

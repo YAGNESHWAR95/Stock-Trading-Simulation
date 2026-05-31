@@ -9,6 +9,7 @@ export default function Watchlist() {
   const [removing, setRemoving] = useState(null);
 
   const loadWatchlist = async () => {
+    await Promise.resolve();
     try {
       setLoading(true);
       const res = await baseAPI.get("/api/trader/watchlist");

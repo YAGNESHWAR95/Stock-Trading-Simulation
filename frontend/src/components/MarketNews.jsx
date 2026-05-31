@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import { useNews } from "../store/newsStore";
 
 export default function MarketNews() {
-  const { feed, sentiment, loading, error, fetchNews, unreadCount, markAllRead } = useNews();
+  const { feed, sentiment, error, fetchNews, unreadCount, markAllRead } = useNews();
 
   useEffect(() => {
     fetchNews();
