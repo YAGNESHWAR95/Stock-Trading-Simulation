@@ -1,37 +1,37 @@
 // import all the components and stuff
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./store/authStore";
 import { useTheme } from "./store/themeStore";
-
 
 // Layout & Utility Components
 import RootLayout from "./components/RootLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Unauthorized from "./components/Unauthorized";
 import ErrorBoundary from "./components/ErrorBoundary";
+import SleekLoader from "./components/SleekLoader";
 
-// Public/Auth Components
-import Home from "./components/Home";
-import Register from "./components/Register";
-import Login from "./components/Login";
-import ForgotPassword from "./components/ForgotPassword";
-import ResetPassword from "./components/ResetPassword";
+// Lazy Loaded Public/Auth Components
+const Home = lazy(() => import("./components/Home"));
+const Register = lazy(() => import("./components/Register"));
+const Login = lazy(() => import("./components/Login"));
+const ForgotPassword = lazy(() => import("./components/ForgotPassword"));
+const ResetPassword = lazy(() => import("./components/ResetPassword"));
 
-// Trading & Admin Components
-import Market from "./components/Market";
-import AssetByID from "./components/AssetByID";
-import TraderDashboard from "./components/TraderDashboard";
-import AdminDashboard from "./components/AdminDashboard";
+// Lazy Loaded Trading & Admin Components
+const Market = lazy(() => import("./components/Market"));
+const AssetByID = lazy(() => import("./components/AssetByID"));
+const TraderDashboard = lazy(() => import("./components/TraderDashboard"));
+const AdminDashboard = lazy(() => import("./components/AdminDashboard"));
 
-// New Feature Extensions Components
-import DashboardSummary from "./components/DashboardSummary";
-import TradingHistory from "./components/TradingHistory";
-import Leaderboard from "./components/Leaderboard";
-import PriceAlerts from "./components/PriceAlerts";
-import MarketNews from "./components/MarketNews";
-import AiDoubts from "./components/AiDoubts";
+// Lazy Loaded New Feature Extensions Components
+const DashboardSummary = lazy(() => import("./components/DashboardSummary"));
+const TradingHistory = lazy(() => import("./components/TradingHistory"));
+const Leaderboard = lazy(() => import("./components/Leaderboard"));
+const PriceAlerts = lazy(() => import("./components/PriceAlerts"));
+const MarketNews = lazy(() => import("./components/MarketNews"));
+const AiDoubts = lazy(() => import("./components/AiDoubts"));
 
 // main app function
 function App() {
@@ -146,7 +146,9 @@ function App() {
   return (
     <>
       <Toaster position="top-center" reverseOrder={false} />
-      <RouterProvider router={routerObj} />
+      <Suspense fallback={<SleekLoader />}>
+        <RouterProvider router={routerObj} />
+      </Suspense>
     </>
   );
 }
