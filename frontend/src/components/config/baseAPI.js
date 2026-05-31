@@ -1,7 +1,10 @@
 import axios from "axios";
 
-// Clean base URL without any '/api' extensions
-const apiURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+const defaultBackendUrl = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+  ? "http://localhost:4000"
+  : "https://stock-trading-simulation-ld2b.onrender.com";
+
+const apiURL = import.meta.env.VITE_BACKEND_URL || defaultBackendUrl;
 
 const baseAPI = axios.create({
   baseURL: apiURL,
