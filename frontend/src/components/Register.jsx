@@ -16,22 +16,18 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // 1. Enforce Regulatory Guidelines Verification First
     if (!acceptedTerms) {
       toast.error("Please read and accept the SEBI guidelines to proceed.");
       return;
     }
 
-    // 2. Client-Side Password Length Safeguard Interceptor
     if (formData.password.length < 8) {
-      toast.error("Password is too short! It must be at least 8 characters long.");
-      return; // Stops the submission pipeline instantly
+      toast.error("Password must be at least 8 characters long.");
+      return;
     }
 
     try {
-      // Execute registration query over our base instance layout configuration
       await baseAPI.post("/api/auth/register", formData);
-      
       toast.success("Registration successful! Welcome to TradePro.");
       navigate("/login");
     } catch (err) {
@@ -40,93 +36,120 @@ export default function Register() {
   };
 
   return (
-    <div className="max-w-md mx-auto my-10 bg-white p-8 border border-gray-100 rounded-2xl shadow-xl">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-blue-900">Create Trader Account</h2>
-        <p className="text-gray-500 text-sm">Fill in your details to get started</p>
-      </div>
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <input 
-            type="text" placeholder="First Name" required 
-            className="border p-2.5 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none transition" 
-            value={formData.firstName} 
-            onChange={e => setFormData({...formData, firstName: e.target.value})} 
-          />
-          <input 
-            type="text" placeholder="Last Name" 
-            className="border p-2.5 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none transition" 
-            value={formData.lastName} 
-            onChange={e => setFormData({...formData, lastName: e.target.value})} 
-          />
+    <div className="max-w-md mx-auto my-12 relative">
+      {/* Decorative backdrop aura */}
+      <div className="absolute inset-0 -z-10 bg-emerald-500/10 rounded-3xl blur-2xl pointer-events-none" />
+
+      <div className="glass-panel p-8 rounded-2xl shadow-2xl border border-white/5 relative z-10 space-y-6">
+        
+        {/* Title Block */}
+        <div className="text-center space-y-1.5">
+          <h2 className="text-2xl font-display font-black text-white tracking-wide">Create Account</h2>
+          <p className="text-xs text-slate-400">Join TradePro virtual simulation platform</p>
         </div>
         
-        <input 
-          type="email" placeholder="Email Address" required 
-          className="border p-2.5 w-full rounded-lg focus:ring-2 focus:ring-blue-400 outline-none transition" 
-          value={formData.email} 
-          onChange={e => setFormData({...formData, email: e.target.value})} 
-        />
-        
-        <input 
-          type="password" placeholder="Password (Min. 8 chars)" required 
-          className="border p-2.5 w-full rounded-lg focus:ring-2 focus:ring-blue-400 outline-none transition" 
-          value={formData.password} 
-          onChange={e => setFormData({...formData, password: e.target.value})} 
-        />
-
-        {/* --- SEBI GUIDELINES FILE SECTION --- */}
-        <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mt-6">
-          <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-            Regulatory Compliance
-          </h3>
-          <p className="text-[11px] text-gray-500 leading-relaxed mb-3">
-            To ensure investor protection, SEBI requires all market participants to review the standard operating procedures and risk disclosures.
-          </p>
+        {/* Input Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
           
-          <a 
-            href="/sebi-guidelines.pdf" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-800 transition underline decoration-2 underline-offset-4"
+          {/* First & Last Name Sub-Grid */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">First Name</label>
+              <input 
+                type="text" placeholder="Alex" required 
+                className="premium-input w-full px-3 py-2.5 rounded-xl text-sm" 
+                value={formData.firstName} 
+                onChange={e => setFormData({...formData, firstName: e.target.value})} 
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Last Name</label>
+              <input 
+                type="text" placeholder="Mercer" 
+                className="premium-input w-full px-3 py-2.5 rounded-xl text-sm" 
+                value={formData.lastName} 
+                onChange={e => setFormData({...formData, lastName: e.target.value})} 
+              />
+            </div>
+          </div>
+          
+          {/* Email Address */}
+          <div className="space-y-1.5">
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Email Address</label>
+            <input 
+              type="email" placeholder="trader@example.com" required 
+              className="premium-input w-full px-4 py-2.5 rounded-xl text-sm" 
+              value={formData.email} 
+              onChange={e => setFormData({...formData, email: e.target.value})} 
+            />
+          </div>
+          
+          {/* Password */}
+          <div className="space-y-1.5">
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Password</label>
+            <input 
+              type="password" placeholder="Min. 8 characters" required 
+              className="premium-input w-full px-4 py-2.5 rounded-xl text-sm" 
+              value={formData.password} 
+              onChange={e => setFormData({...formData, password: e.target.value})} 
+            />
+          </div>
+
+          {/* Regulatory Compliance PDF Drawer */}
+          <div className="bg-slate-900/60 p-4 rounded-xl border border-white/5 space-y-2 mt-4">
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Regulatory Compliance</span>
+            <p className="text-[10px] text-slate-500 leading-relaxed">
+              To ensure investor protection, SEBI requires all market participants to review the standard operating procedures and risk disclosures.
+            </p>
+            
+            <a 
+              href="/sebi-guidelines.pdf" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-400 hover:text-indigo-300 transition hover:underline"
+            >
+              <svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>Download Official SEBI Guidelines (PDF)</span>
+            </a>
+          </div>
+
+          {/* Regulatory Compliance Acknowledge Box */}
+          <div className="flex items-start gap-3 py-2">
+            <input 
+              type="checkbox" 
+              id="accept-terms" 
+              className="mt-0.5 h-4 w-4 border-white/10 rounded bg-slate-950 focus:ring-indigo-500 cursor-pointer"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+            />
+            <label htmlFor="accept-terms" className="text-[11px] text-slate-400 leading-snug cursor-pointer select-none">
+              I confirm that I have reviewed the SEBI guidelines and I **Accept and Continue** with this virtual trading simulation.
+            </label>
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={!acceptedTerms}
+            className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all duration-200 ${
+              acceptedTerms 
+              ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-[0_0_15px_rgba(99,102,241,0.25)] hover:scale-[1.01] active:scale-95 cursor-pointer" 
+              : "bg-slate-900 text-slate-600 border border-white/5 cursor-not-allowed"
+            }`}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Read Official SEBI Guidelines (PDF)
-          </a>
+            Create Account
+          </button>
+        </form>
+
+        {/* Footer Account Prompt */}
+        <div className="text-center text-xs text-slate-400">
+          Already have an account?{" "}
+          <Link to="/login" className="text-indigo-400 font-bold hover:text-indigo-300 hover:underline">
+            Log in
+          </Link>
         </div>
 
-        {/* --- ACCEPT AND CONTINUE CHECKBOX --- */}
-        <div className="flex items-start gap-3 py-2">
-          <input 
-            type="checkbox" 
-            id="accept-terms" 
-            className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-            checked={acceptedTerms}
-            onChange={(e) => setAcceptedTerms(e.target.checked)}
-          />
-          <label htmlFor="accept-terms" className="text-xs text-gray-600 leading-snug cursor-pointer select-none">
-            I confirm that I have downloaded/read the SEBI guidelines and I **Accept and Continue** with this virtual trading simulation.
-          </label>
-        </div>
-
-        <button 
-          type="submit" 
-          disabled={!acceptedTerms}
-          className={`w-full py-3 rounded-xl font-bold text-white transition-all shadow-md ${
-            acceptedTerms 
-            ? "bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95 cursor-pointer" 
-            : "bg-gray-300 cursor-not-allowed"
-          }`}
-        >
-          Create Account
-        </button>
-      </form>
-
-      <div className="text-center mt-6 text-sm text-gray-500">
-        Already have an account? <Link to="/login" className="text-blue-600 font-bold hover:underline">Log in</Link>
       </div>
     </div>
   );
