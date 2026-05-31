@@ -67,7 +67,7 @@ export default function Login() {
       <div className="mt-4">
         <button
           type="button"
-          onClick={() => window.location.href = `${import.meta.env.VITE_BACKEND_URL || "http://localhost:4000"}/api/auth/google`}
+          onClick={() => window.location.href = `${import.meta.env.VITE_BACKEND_URL || "https://stock-trading-simulation-ld2b.onrender.com"}/api/auth/google`}
           className="w-full inline-flex items-center justify-center gap-2 border border-gray-300 rounded py-2 text-gray-700 hover:bg-gray-50 transition"
         >
           Continue with Google
