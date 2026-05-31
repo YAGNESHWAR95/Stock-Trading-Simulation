@@ -1,380 +1,192 @@
-# Stock Trading Simulation — Backend API Documentation
+# Stock Trading Simulation - Backend Service Documentation
 
-A complete Node.js + Express + MongoDB backend for a full-stack MERN real-time paper trading and portfolio simulation engine featuring secure JWT authentication via HTTP-only cookies, role-based access control, transaction ledger isolation, and custom price alert rule evaluation.
-
-## Deployed Links
-
-* **Backend API URL:** `http://localhost:4000` (Development)
-* **Deployed Backend URL:** `https://your-backend-deployment.onrender.com` 
-* **Frontend URL:** `https://your-frontend-deployment.vercel.app`
+This service forms the core backend of the Stock Trading Simulation Platform. It is built as a RESTful and WebSockets-enabled Node.js and Express server that integrates with MongoDB Atlas using Mongoose. The service coordinates role-based user management, database transactions, a real-time asset price simulation engine, custom price alert notifications, automated stop-loss and take-profit order execution, and integrated artificial intelligence doubt clearance.
 
 ---
 
-## Project Setup & Installation
+## Architectural Workflow and Key Services
 
-### 1. Initialize Project Environment
-```bash
-# Initialize npm project (creates package.json)
-npm init -y
+The backend manages multiple synchronized systems to support real-time paper trading:
 
-# Core server infrastructure
-npm install express mongoose dotenv
+### 1. Real-Time Price Simulation Engine
+A primary background routine running on the Node.js event loop handles market simulation:
+*   **Time Interval:** Runs every 5 seconds.
+*   **Mechanism:** Fetches all active assets from MongoDB, applies a random price fluctuation between -1% and +1%, enforces a minimum price of $1.00, and commits the updated price back to the database.
+*   **WebSockets Broadcast:** After updating the database, the server broadcasts the full array of updated prices (`_id`, `symbol`, `currentPrice`, and price direction `isUp`) to all connected socket clients via the `market-data-update` channel.
 
-# Authentication, Session Stability & Security
-npm install jsonwebtoken bcryptjs cookie-parser cors
+### 2. Price Alert Evaluation System
+Within the same 5-second interval, the backend evaluates user-defined price alerts:
+*   **Evaluation:** Checks the `AlertModel` for active, untriggered alert rules matching the fluctuated asset.
+*   **Alert Rules:**
+    *   **ABOVE:** Triggers when the asset's current price rises to or exceeds the target threshold.
+    *   **BELOW:** Triggers when the asset's current price falls to or drops below the target threshold.
+*   **Action:** If a rule is satisfied, the server marks the alert as triggered (`isTriggered = true`), saves it, and emits a targeted WebSocket notification (`price-alert-notification`) to the individual user's socket room.
 
-# Development Utilities
-npm install --save-dev nodemon
+### 3. Automated Stop-Loss and Take-Profit Order Execution
+The platform supports automated conditional order liquidation:
+*   **Order Lookup:** The engine scans the `ConditionalOrderModel` for pending orders corresponding to active assets.
+*   **Trigger Conditions:**
+    *   **TAKE_PROFIT:** Executes when the current asset price meets or exceeds the target price.
+    *   **STOP_LOSS:** Executes when the current asset price drops to or below the target price.
+*   **Execution Safety and Wallet Settlement:**
+    *   The engine verifies the user's holdings. If the user does not possess sufficient quantity of the asset, the order status is marked as `FAILED` and `executed = true`.
+    *   If holdings are sufficient, the server calculates liquidation revenue (`quantity * currentPrice`), updates the user's wallet balance, subtracts the shares from their portfolio (removing the asset block from the database entirely if shares fall to 0), records a completed sell trade into the `OrderModel` ledger, and marks the conditional order as `EXECUTED` (`executed = true`).
+    *   Finally, the server pushes a targeted WebSocket payload (`conditional-order-triggered`) to the trader's private room to provide instant interface updates.
 
-{
-  "name": "stock-trading-simulation-backend",
-  "version": "1.0.0",
-  "description": "Stock Trading Simulation Engine Backend API",
-  "main": "server.js",
-  "type": "module",
-  "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "bcryptjs": "^3.0.3",
-    "cookie-parser": "^1.4.7",
-    "cors": "^2.8.6",
-    "dotenv": "^17.3.1",
-    "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.2.4"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.1"
-  }
-}
+---
 
-# Server Configuration Pipeline
-PORT=4000
+## Authentication and Security Architecture
 
-# Database Persistence Node
-DB_URL=mongodb+srv://<username>:<password>@cluster0.mongodb.net/stock-sim?retryWrites=true&w=majority
+The backend implements security structures designed to resist exploit vectors:
 
-# Security Encryption Keys
-JWT_SECRET=your_super_cryptographically_secure_secret_jwt_key_here
+1.  **Stateful Session Management via HTTP-Only Cookies:** Upon successful credentials verification or Google OAuth registration, the server generates a signed JSON Web Token (JWT). This token is appended to the response as a cookie with `httpOnly: true`, `secure: true`, and `sameSite: "none"` flags. This prevents Client-Side Scripting (XSS) attacks from reading user sessions.
+2.  **Role-Based Access Control Middleware (`verifyToken.js`):** Intercepts route requests. It parses the incoming token, extracts user profile information, and matches the user's role against authorization parameters. Only authenticated users with matching roles (e.g., `TRADER` or `ADMIN`) are allowed to proceed.
+3.  **Data Scrubbing and Clean Serialization:** The backend explicitly sanitizes user queries (e.g., `.select("-password")`) to ensure password hashes are never exposed across network payloads.
+4.  **CORS Security:** Restricts incoming requests to whitelisted clients dynamically configured via environment properties.
 
-# Development mode featuring hot-reloads via nodemon
-npm run dev
+---
 
-# Production execution sequence
-npm start
+## Database Schemas (Mongoose Models)
 
+### 1. User Schema (`UserModel.js`)
+Stores system participant credentials, wallet contexts, and personal settings:
+*   `email` (String, required, unique): The primary identifier.
+*   `password` (String, required): Cryptographically hashed password using bcrypt.
+*   `firstName` (String, required): User's first name.
+*   `lastName` (String): User's last name.
+*   `role` (String, enum: `["TRADER", "ADMIN"]`, default: `"TRADER"`): Controls route-level authorization.
+*   `walletBalance` (Number, default: `100000.00`): The cash balance available for trades.
+*   `watchlist` (Array of ObjectId references targeting `AssetModel`): Saved stocks or crypto tickers.
+*   `isActive` (Boolean, default: `true`): Administrative account toggle.
+
+### 2. Asset Schema (`AssetModel.js`)
+Represents the database of tradable items:
+*   `symbol` (String, required, unique): Uppercased asset code (e.g., `"AAPL"`, `"BTC"`).
+*   `name` (String, required): Descriptive title.
+*   `currentPrice` (Number, required): Current spot price.
+*   `marketCap` (Number): Dynamic market capitalization metric.
+*   `isActive` (Boolean, default: `true`): Toggles public tradability.
+
+### 3. Portfolio Schema (`PortfolioModel.js`)
+Maps aggregated asset positions to unique user nodes:
+*   `user` (ObjectId targeting `UserModel`, required): Owner of the holding.
+*   `asset` (ObjectId targeting `AssetModel`, required): Reference to the held instrument.
+*   `quantity` (Number, required, minimum 0): Quantified shares or coins.
+*   `averageBuyPrice` (Number, required): Tracks the average cost basis of the position to compute dynamic Profit and Loss (P&L).
+
+### 4. Order Schema (`OrderModel.js`)
+Maintains an immutable ledger of transactions for historical analysis:
+*   `user` (ObjectId targeting `UserModel`, required): Initiating trader.
+*   `asset` (ObjectId targeting `AssetModel`, required): Target financial instrument.
+*   `orderType` (String, enum: `["BUY", "SELL"]`, required): Action taken.
+*   `quantity` (Number, required): Transaction volume.
+*   `priceAtExecution` (Number, required): Asset price at the exact moment of transaction.
+*   `totalAmount` (Number, required): Total transaction value (`quantity * priceAtExecution`).
+*   `status` (String, default: `"COMPLETED"`): Transaction completion state.
+*   `createdAt` (Date): Auto-generated timestamp.
+
+### 5. Alert Schema (`AlertModel.js`)
+Configures custom price triggers:
+*   `user` (ObjectId targeting `UserModel`, required): Target of notification.
+*   `asset` (ObjectId targeting `AssetModel`, required): Asset to track.
+*   `targetPrice` (Number, required): Price limit value.
+*   `condition` (String, enum: `["ABOVE", "BELOW"]`, required): Direction trigger.
+*   `isTriggered` (Boolean, default: `false`): Flips to true upon satisfaction.
+
+### 6. Conditional Order Schema (`ConditionalOrderModel.js`)
+Stores stop-loss and take-profit parameters:
+*   `user` (ObjectId targeting `UserModel`, required): Triggering profile.
+*   `asset` (ObjectId targeting `AssetModel`, required): Held asset to liquidate.
+*   `quantity` (Number, required, minimum 1): Position size to sell.
+*   `triggerPrice` (Number, required): Targeted boundary.
+*   `triggerType` (String, enum: `["STOP_LOSS", "TAKE_PROFIT"]`, required): Triggers selling.
+*   `status` (String, enum: `["PENDING", "EXECUTED", "CANCELLED", "FAILED"]`, default: `"PENDING"`): Current state.
+*   `executed` (Boolean, default: `false`): Execution completion state.
+
+---
+
+## Detailed Backend Directory and File Structure
+
+Below is the comprehensive file structure of the backend service, outlining the specific role and operational responsibilities of every single file:
+
+```text
 backend/
-├── APIs/                            # Route Orchestrator Controllers
-│   ├── AuthAPI.js                  # Registration, profile checkpoints, and session verification
-│   ├── MarketAPI.js                 # Global tickers database seeding and market details
-│   ├── TraderAPI.js                 # Portfolio transactions, execution orders, and monitoring rules
-│   └── AdminAPI.js                  # Administrative profile metrics and system overrides
-├── config/                          # Connection managers
-│   └── db.js                        # Mongoose MongoDB clustering handshake configuration
-├── middlewares/                     # Pipeline Interceptors
-│   └── verifyToken.js               # JWT state extractor and explicit role authorization guard
-├── models/                          # Database Collections Mapping (Mongoose Schemas)
-│   ├── UserModel.js                 # User records (first/last names, hashed passwords, wallet balances)
-│   ├── AssetModel.js                # Product details (symbols, names, real-time current spot prices)
-│   ├── PortfolioModel.js            # Aggregated holdings matrices tracked per user account node
-│   ├── OrderModel.js                # Chronological transactional audit logs ledger
-│   └── AlertModel.js                # Price guard rule conditional constraints entries
-├── .env                            # Environment variables (Locally retained; omitted from tracking)
-├── .gitignore                      # Git tracking boundary instructions file
-├── trade_testing.http               # REST Client automation script for execution debugging
-├── package.json                    # Dependencies manifest configuration
-└── server.js                       # Primary application bootstrapper entry point
+├── APIs/                            # Express Route Controllers
+│   ├── AdminAPI.js                  # Routes for managing system assets, halting trades, and viewing platform users
+│   ├── AiAPI.js                     # Public AI routing endpoint using Groq SDK integration
+│   ├── AuthAPI.js                   # Authentication endpoints (login, register, logout, Google OAuth, password recovery)
+│   ├── MarketAPI.js                 # Public market endpoints (assets list, individual details, side-by-side compare, news)
+│   └── TraderAPI.js                 # Protected trader routes (buy, sell, portfolio tracking, alert creation, conditional orders)
+│
+├── config/                          # Connection & Asset Config Systems
+│   ├── cloudinary.js                # Configures the Cloudinary API client with cloud name, API key, and secret key
+│   ├── cloudinaryUpload.js          # Middleware helper mapping Multer memory buffer uploads directly to Cloudinary
+│   └── multer.js                    # Configures Multer in-memory storage for handling multi-part file uploads safely
+│
+├── middlewares/                     # Express Interceptor Pipeline
+│   └── verifyToken.js               # JWT parsing, cookie extraction, token verification, and role authorization guard
+│
+├── models/                          # Mongoose ODM Collection Schemas
+│   ├── AlertModel.js                # Schema mapping price notification alert criteria (ABOVE or BELOW targets)
+│   ├── AssetModel.js                # Schema mapping tradable market tokens, current price, and status flags
+│   ├── ConditionalOrderModel.js     # Schema mapping automated Stop-Loss and Take-Profit execution rules
+│   ├── OrderModel.js                # Schema mapping immutable transaction histories for portfolio analysis
+│   ├── PortfolioModel.js            # Schema mapping current aggregated asset holdings and average purchase prices
+│   └── UserModel.js                 # Schema mapping profile accounts, hashed passwords, cash balances, and watchlists
+│
+├── services/                        # Business Logic Service Handlers
+│   ├── authService.js               # Decoupled functions handling login credentials, password resets, and Google OAuth
+│   ├── marketEngine.js              # Background service orchestrating WebSocket feeds and price alert boundary checks
+│   └── newsService.js               # Service aggregating financial news feeds and computing overall market sentiments
+│
+├── .env                             # Active environment configuration parameters (omitted from repository tracking)
+├── .gitignore                       # Explicit Git tracking ignore definitions (.env, node_modules, log files)
+├── package.json                     # Main dependencies definition, start configurations, and server scripts
+├── seed.js                          # Standalone seeding script populating baseline tradable assets into MongoDB Atlas
+└── server.js                        # Primary application bootstrapper connecting database, websockets, and routes
+```
 
+---
 
-Shared Middlewares
-Token and Role Verification (middlewares/verifyToken.js)
-An interception guard that validates incoming sessions before reaching underlying data routes:
+## Detailed Explanation of Core Service Files
 
-Intercepts incoming packets, parsing the token stored in your secure HTTP-only cookie.
+### 1. Root Server Bootstrapper (`server.js`)
+*   **Purpose:** The entry point of the server application.
+*   **Responsibilities:** Initializes the HTTP server wrapping the Express app, attaches the Socket.io server engine, configures CORS origins, registers the cookie parser, attaches all API route matrices (`/api/auth`, `/api/market`, `/api/trader`, `/api/admin`, `/api/ai`), establishes the Mongoose MongoDB connection, and starts the background price engine simulator.
 
-Decodes credentials using the shared encryption key context variable (JWT_SECRET).
+### 2. Market Simulation Engine (`services/marketEngine.js`)
+*   **Purpose:** Handles the continuous, multi-threaded market movement simulation.
+*   **Responsibilities:** Evaluates price fluctuations every 5 seconds. Connects directly to the database to modify prices, broadcasts updates via Socket.io (`realtime-ticker-feed`), scans the active `AlertModel` records to trigger user-targeted alerts, and pushes targeted WebSocket packets to private rooms.
 
-Evaluates role privileges against white-listed arrays passed into the route rule configuration parameters.
+### 3. Authentication Services (`services/authService.js`)
+*   **Purpose:** Houses all logic related to identity management and credentials processing.
+*   **Responsibilities:** Encrypts user passwords using bcrypt hashing, validates input logs, signs JSON Web Tokens for secure session cookie creation, communicates with Google APIs to resolve OAuth tokens, and generates hashed recovery keys for password resets.
 
-Appends data payload metadata contexts directly into Express pipeline parameters (req.user).
+### 4. Sentiment and News Aggregator (`services/newsService.js`)
+*   **Purpose:** Pulls external headlines and calculates overall market trends.
+*   **Responsibilities:** Fetches relevant financial news articles, processes headlines to categorize them as bullish, bearish, or neutral, and calculates an aggregated sentiment score alongside confidence ratings.
 
-Usage Strategy: verifyToken("TRADER") or verifyToken("TRADER", "ADMIN").
+### 5. Media Handlers (`config/cloudinary.js`, `config/cloudinaryUpload.js`, `config/multer.js`)
+*   **Purpose:** Integrates user media processing.
+*   **Responsibilities:** Multer catches file streams, keeping media blocks within RAM buffers. Cloudinary APIs securely upload these buffers to cloud storage endpoints, returning CDN-optimized links.
 
-📡 API Endpoints Matrix
-Public Authentication Routes (/api/auth)
-1. Public Account Creation
-Endpoint: POST /api/auth/register
+---
 
-Description: Creates a brand new individual account, setting default starting wallet parameters.
+## Environmental Variable Blueprint
 
-Request Payload Body:
+Deploying the service requires a secure, populated `.env` file in the service root folder:
 
-JSON
-{
-  "email": "trader@example.com",
-  "password": "password123",
-  "firstName": "Yagneshwar",
-  "lastName": "Dev"
-}
-Response Details (201 Created):
-
-JSON
-{
-  "message": "User registered successfully",
-  "payload": {
-    "_id": "6a1033b7ecaa325a37e1125e",
-    "email": "trader@example.com",
-    "firstName": "Yagneshwar",
-    "lastName": "Dev",
-    "role": "TRADER",
-    "walletBalance": 100000.00,
-    "isActive": true
-  }
-}
-2. Session Token Acquisition
-Endpoint: POST /api/auth/login
-
-Description: Processes login queries, appending a signed JWT to an HTTP-only payload cookie container.
-
-Request Payload Body:
-
-JSON
-{
-  "email": "trader@example.com",
-  "password": "password123"
-}
-Response Details (200 OK):
-
-JSON
-{
-  "message": "Login successful",
-  "payload": {
-    "_id": "6a1033b7ecaa325a37e1125e",
-    "firstName": "Yagneshwar",
-    "role": "TRADER",
-    "walletBalance": 100000.00
-  }
-}
-Cookies Appended: Set-Cookie: token=<JWT_STRING>; HttpOnly; Secure; SameSite=Lax; Path=/
-
-Trader Action Route Trees (/api/trader)
-All endpoints below require an authenticated token matching the target role restriction (TRADER).
-
-3. Route Buy Order Placement
-Endpoint: POST /api/trader/buy
-
-Description: Deducts capital limits from wallet balances, updates position structures inside holding schemas, and pushes records to the chronological logging tracker.
-
-Request Payload Body:
-
-JSON
-{
-  "assetId": "6b2044c8edbb436b48f2236f",
-  "quantity": 10
-}
-Response Details (200 OK):
-
-JSON
-{
-  "message": "Trade executed successfully",
-  "walletBalance": 93500.00
-}
-4. Route Sell Order Processing
-Endpoint: POST /api/trader/sell
-
-Description: Verifies that existing portfolio quantities are sufficient to meet the trade volume request, increments the available cash balance, scales down holding balances, and appends transaction events to the clearing history log.
-
-Request Payload Body:
-
-JSON
-{
-  "assetId": "6b2044c8edbb436b48f2236f",
-  "quantity": 5
-}
-Response Details (200 OK):
-
-JSON
-{
-  "message": "Sell executed successfully",
-  "walletBalance": 96750.00
-}
-5. Compile Account Financial Metrics
-Endpoint: GET /api/trader/dashboard-summary
-
-Description: Aggregates portfolio holdings, computes overall invested capital sums against market spot variances, and calculates dynamic net return percentages.
-
-Response Details (200 OK):
-
-JSON
-{
-  "message": "Dashboard summary details compiled",
-  "payload": {
-    "walletBalance": 96750.00,
-    "totalInvestedValue": 3250.00,
-    "totalCurrentValue": 3500.00,
-    "totalPnL": 250.00,
-    "totalPnLPercentage": 7.69,
-    "portfolioBreakdown": [
-      {
-        "assetId": "6b2044c8edbb436b48f2236f",
-        "assetName": "Apple Inc.",
-        "symbol": "AAPL",
-        "quantity": 5,
-        "avgBuyPrice": 150.00,
-        "currentPrice": 160.00,
-        "investedValue": 750.00,
-        "currentValue": 800.00,
-        "pnl": 50.00,
-        "pnlPercentage": 6.67
-      }
-    ]
-  }
-}
-6. Extract Order Execution Audits
-Endpoint: GET /api/trader/history
-
-Description: Extracts chronological logs associated with target users, populating matching ticker references.
-
-Response Details (200 OK):
-
-JSON
-{
-  "message": "Historical trade metrics",
-  "payload": [
-    {
-      "_id": "6c3055d9fcee547c59a3347a",
-      "orderType": "BUY",
-      "quantity": 10,
-      "priceAtExecution": 150.00,
-      "totalAmount": 1500.00,
-      "status": "COMPLETED",
-      "asset": { "symbol": "AAPL", "name": "Apple Inc." },
-      "createdAt": "2026-05-23T06:12:00.000Z"
-    }
-  ]
-}
-7. Arm Price Alert Trigger Conditions
-Endpoint: POST /api/trader/alerts
-
-Description: Registers target metric thresholds into checking collections.
-
-Request Payload Body:
-
-JSON
-{
-  "assetId": "6b2044c8edbb436b48f2236f",
-  "targetPrice": 175.00,
-  "condition": "ABOVE"
-}
-Response Details (201 Created):
-
-JSON
-{
-  "message": "Price change trigger rules saved",
-  "payload": {
-    "_id": "6d4066e0adff658d60b4458b",
-    "condition": "ABOVE",
-    "targetPrice": 175.00,
-    "isTriggered": false
-  }
-}
-8. Retrieve Armed Condition Watch Rules
-Endpoint: GET /api/trader/alerts
-
-Description: Looks up active rule logs matching a user profile where isTriggered is false.
-
-Response Details (200 OK):
-
-JSON
-{
-  "message": "Active Price Watch Triggers",
-  "payload": [
-    {
-      "_id": "6d4066e0adff658d60b4458b",
-      "condition": "ABOVE",
-      "targetPrice": 175.00,
-      "asset": { "symbol": "AAPL", "name": "Apple Inc.", "currentPrice": 160.00 }
-    }
-  ]
-}
-9. Global Standings Matrix Compilation
-Endpoint: GET /api/trader/leaderboard
-
-Description: Publicly available endpoint calculating overall individual user valuations (Cash holdings + Portfolio valuations) ranked descending.
-
-Response Details (200 OK):
-
-JSON
-{
-  "message": "Top Active Traders Leaderboard",
-  "payload": [
-    {
-      "username": "Yagneshwar Dev",
-      "walletBalance": 96750.00,
-      "portfolioValue": 3500.00,
-      "totalNetWorth": 100250.00
-    }
-  ]
-}
-Data Models Configuration
-User Model Profile Schema (models/UserModel.js)
-JavaScript
-{
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  firstName: { type: String, required: true },
-  lastName: { type: String },
-  role: { type: String, enum: ["TRADER", "ADMIN"], default: "TRADER" },
-  walletBalance: { type: Number, default: 100000.00 },
-  isActive: { type: Boolean, default: true }
-}
-Order Tracking Schema (models/OrderModel.js)
-JavaScript
-{
-  user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  asset: { type: Schema.Types.ObjectId, ref: "Asset", required: true },
-  orderType: { type: String, enum: ["BUY", "SELL"], required: true },
-  quantity: { type: Number, required: true },
-  priceAtExecution: { type: Number, required: true },
-  totalAmount: { type: Number, required: true },
-  status: { type: String, default: "COMPLETED" }
-}
-Pipeline Architectures Overview
-1. Order Processing Flow
-Plaintext
-Client Order Request
-   ↓
-POST /api/trader/buy
-   ↓
-verifyToken Interception (Validates TRADER role context)
-   ↓
-Check Asset Model for spot price verification
-   ↓
-Verify wallet balance inside User document schema
-   ↓
-Deduct balance / Push item matrix into Portfolio tracking collections
-   ↓
-Record transaction logs into Order ledger
-   ↓
-Return remaining wallet cash configurations
-2. State Session Verification Flow
-Plaintext
-Browser Hard Refresh (Wipes frontend UI client memory space)
-   ↓
-App.jsx runs mounting useEffect layout hooks
-   ↓
-GET /api/auth/check-auth fires silently
-   ↓
-Server extracts encrypted cookie tokens
-   ↓
-Decodes payloads using JWT_SECRET
-   ↓
-Returns user context fields (Prevents routing back to login)
-Security Framework Implementation
-Secure Storage: Transaction authorization signatures are retained inside non-exploitable httpOnly cookie channels. This design protects tokens against Cross-Site Scripting (XSS) extraction attempts.
-
-Data Cleansing: User tracking query filters use explicit query restrictions, filtering out password fields (.select("-password")) before sending user objects across the network.
-
-CORS Access Rules Control: Configuration setups use hardcoded front-end routing lists, dropping any unlisted port access attempts to protect data integrity.
+| Variable Name | Description | Example Value |
+| :--- | :--- | :--- |
+| `PORT` | Local runtime socket port parameter | `4000` |
+| `FRONTEND_URL` | Domain route parameters for client origin validation | `http://localhost:5173` |
+| `DB_URL` | MongoDB cluster connection string | `mongodb+srv://user:pass@cluster.mongodb.net/db` |
+| `JWT_SECRET` | Token encryption key | `a_highly_cryptographically_secure_hash_string` |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary integration cloud space name | `your_cloudinary_cloud_name_placeholder` |
+| `CLOUDINARY_API_KEY` | Cloudinary access authentication identifier key | `your_cloudinary_api_key_placeholder` |
+| `CLOUDINARY_API_SECRET` | Cloudinary access credentials private signature | `your_cloudinary_api_secret_placeholder` |
+| `GOOGLE_CLIENT_ID` | OAuth integration access identity key | `your_google_oauth_client_id.apps.googleusercontent.com` |
+| `GOOGLE_CLIENT_SECRET` | OAuth integration private validation token | `GOCSPX-your_google_oauth_client_secret` |
+| `GOOGLE_REDIRECT_URI` | Identity handshake redirect backend callback target | `http://localhost:4000/api/auth/google/callback` |
+| `AI_API_NAME` | Identifier value returned in assistant responses | `Stock-Trading-Platform` |
+| `AI_API_SECRET_KEY` | Groq secure platform validation key | `gsk_your_groq_api_key_placeholder` |

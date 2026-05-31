@@ -3,55 +3,93 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 export default function TraderDashboard() {
   const location = useLocation();
 
-  // Helper helper to dynamically highlight the active navigation tab
+  // Helper function to dynamically highlight the active navigation tab
   const isActiveTab = (path) => {
     if (path === "" && location.pathname === "/trader-dashboard") return true;
     return location.pathname === `/trader-dashboard/${path}`;
   };
 
   const navStyles = (path) =>
-    `px-4 py-2 font-medium rounded-lg transition-colors duration-200 ${
+    `inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border transition-all duration-200 cursor-pointer ${
       isActiveTab(path)
-        ? "bg-blue-600 text-white shadow-md"
-        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+        ? "bg-indigo-600/20 text-indigo-300 border-indigo-500/30 shadow-[0_0_12px_rgba(99,102,241,0.15)]"
+        : "bg-slate-900/40 text-slate-400 border-white/5 hover:text-slate-200 hover:bg-slate-800/40"
     }`;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Navigation Tab Header Bar */}
-        <div className="bg-white p-4 rounded-xl shadow-sm border flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="text-2xl">💼</span>
-            <h2 className="text-xl font-bold text-gray-800">Trader Command Center</h2>
+    <div className="space-y-6">
+      
+      {/* Segmented Navigation Tab Header Bar */}
+      <div className="glass-panel p-4 rounded-2xl shadow-xl flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        
+        {/* Dashboard Title & Icon */}
+        <div className="flex items-center space-x-3">
+          <div className="p-2.5 rounded-xl bg-gradient-to-tr from-indigo-500/20 to-teal-500/20 border border-indigo-500/20">
+            <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
           </div>
+          <div>
+            <h2 className="text-lg font-display font-extrabold text-white leading-tight">Trader Command</h2>
+            <p className="text-[11px] text-slate-500 uppercase tracking-widest">Simulation Workspace</p>
+          </div>
+        </div>
+        
+        {/* Segmented Navigation Actions */}
+        <nav className="flex flex-wrap gap-2 items-center justify-center lg:justify-end">
           
-          <nav className="flex flex-wrap gap-2 justify-center sm:justify-end">
-            <Link to="/trader-dashboard" className={navStyles("")}>
-              Dashboard Summary
-            </Link>
-            <Link to="/trader-dashboard/history" className={navStyles("history")}>
-              Trade History Logs
-            </Link>
-            <Link to="/trader-dashboard/leaderboard" className={navStyles("leaderboard")}>
-              Leaderboard
-            </Link>
-            <Link to="/trader-dashboard/alerts" className={navStyles("alerts")}>
-              Price Alerts
-            </Link>
-            <Link to="/trader-dashboard/news" className={navStyles("news")}>Market News</Link>
-            <Link to="/trader-dashboard/ai" className={navStyles("ai")}>Ask AI</Link>
-            <Link to="/market" className="px-4 py-2 font-medium rounded-lg bg-green-50 text-green-700 hover:bg-green-100">
-              Go to Live Market 📈
-            </Link>
-          </nav>
-        </div>
+          <Link to="/trader-dashboard" className={navStyles("")}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span>Overview</span>
+          </Link>
+          
+          <Link to="/trader-dashboard/history" className={navStyles("history")}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Audit History</span>
+          </Link>
+          
+          <Link to="/trader-dashboard/leaderboard" className={navStyles("leaderboard")}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Leaderboard</span>
+          </Link>
+          
+          <Link to="/trader-dashboard/alerts" className={navStyles("alerts")}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span>Alert Rules</span>
+          </Link>
+          
+          <Link to="/trader-dashboard/news" className={navStyles("news")}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 4a2 2 0 00-2-2m2 2v10a2 2 0 01-2 2h-2" />
+            </svg>
+            <span>Market News</span>
+          </Link>
 
-        {/* Dynamic Outlet Window Viewport */}
-        {/* React Router will inject the correct subcomponent here based on URL */}
-        <div className="transition-all duration-300">
-          <Outlet />
-        </div>
+          {/* Glowing CTA for Live Market Discovery */}
+          <Link 
+            to="/market" 
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 hover:scale-[1.01] transition-all duration-200 cursor-pointer"
+          >
+            <span>Live Feed</span>
+            <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+          </Link>
+          
+        </nav>
+      </div>
+
+      {/* Dynamic Subcomponent Outlet Panel */}
+      <div className="transition-all duration-300">
+        <Outlet />
       </div>
     </div>
   );
