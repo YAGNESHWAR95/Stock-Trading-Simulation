@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true }, // Keeping it if used elsewhere
   role: { type: String, enum: ["TRADER", "ADMIN"], default: "TRADER" },
   walletBalance: { type: Number, default: 100000.00 },
+  watchlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "asset" }],
   isActive: { type: Boolean, default: true },
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date }

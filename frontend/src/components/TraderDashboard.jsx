@@ -41,6 +41,7 @@ export default function TraderDashboard() {
               Price Alerts
             </Link>
             <Link to="/trader-dashboard/news" className={navStyles("news")}>Market News</Link>
+            <Link to="/trader-dashboard/ai" className={navStyles("ai")}>Ask AI</Link>
             <Link to="/market" className="px-4 py-2 font-medium rounded-lg bg-green-50 text-green-700 hover:bg-green-100">
               Go to Live Market 📈
             </Link>

@@ -30,6 +30,7 @@ import TradingHistory from "./components/TradingHistory";
 import Leaderboard from "./components/Leaderboard";
 import PriceAlerts from "./components/PriceAlerts";
 import MarketNews from "./components/MarketNews";
+import AiDoubts from "./components/AiDoubts";
 
 // main app function
 function App() {
@@ -112,6 +113,10 @@ function App() {
             {
               path: "news", // /trader-dashboard/news
               element: <MarketNews />,
+            },
+            {
+              path: "ai", // /trader-dashboard/ai
+              element: <AiDoubts />,
             },
           ],
         },

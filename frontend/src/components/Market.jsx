@@ -1,43 +1,125 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useMarket } from "../store/marketStore";
+import { useAuth } from "../store/authStore";
 import { socket } from "./config/socket";
+import baseAPI from "./config/baseAPI";
+import { toast } from "react-hot-toast";
+import LiveTicker from "./LiveTicker";
 
 export default function Market() {
   const { assets, fetchAssets, loading, setAssets } = useMarket();
+  const { isAuthenticated, currentUser } = useAuth();
   const [prevPrices, setPrevPrices] = useState({});
+  const [search, setSearch] = useState("");
+  const [watchlist, setWatchlist] = useState([]);
+  const [savingWatchId, setSavingWatchId] = useState(null);
+  const [selectedCompare, setSelectedCompare] = useState([]);
+
+  const loadWatchlist = async () => {
+    if (!isAuthenticated) return setWatchlist([]);
+
+    try {
+      const res = await baseAPI.get("/api/trader/watchlist");
+      setWatchlist(res.data?.payload || []);
+    } catch (err) {
+      console.error("Failed to fetch watchlist", err);
+    }
+  };
 
   useEffect(() => {
-    // 1. Fetch initial data once
     fetchAssets();
 
-    // 2. Connect socket only once
     if (!socket.connected) {
       socket.connect();
     }
 
-    // 3. Listen for live updates
     socket.on("market-data-update", (updatedAssets) => {
-      // store previous prices before updating UI
       setPrevPrices((prev) => {
         const newPrev = { ...prev };
-
         updatedAssets.forEach((asset) => {
           newPrev[asset._id] = asset.currentPrice;
         });
-
         return newPrev;
       });
-
-      // update store
       setAssets(updatedAssets);
     });
 
-    // cleanup
+    socket.on("price-alert-notification", ({ message }) => {
+      toast.success(message || "Price alert triggered!");
+    });
+
+    socket.on("conditional-order-triggered", ({ message }) => {
+      toast.success(message || "Conditional order executed.");
+    });
+
     return () => {
       socket.off("market-data-update");
+      socket.off("price-alert-notification");
+      socket.off("conditional-order-triggered");
     };
   }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated || !currentUser?._id) return;
+    if (!socket.connected) {
+      socket.connect();
+    }
+    socket.emit("join-user-room", currentUser._id);
+    loadWatchlist();
+  }, [isAuthenticated, currentUser]);
+
+  const handleToggleWatchlist = async (assetId) => {
+    if (!isAuthenticated) {
+      toast.error("Log in to manage your watchlist.");
+      return;
+    }
+
+    try {
+      setSavingWatchId(assetId);
+      const exists = watchlist.some((item) => item._id === assetId);
+
+      if (exists) {
+        await baseAPI.delete(`/api/trader/watchlist/${assetId}`);
+        setWatchlist((prev) => prev.filter((item) => item._id !== assetId));
+        toast.success("Removed from watchlist.");
+      } else {
+        await baseAPI.post("/api/trader/watchlist", { assetId });
+        const asset = assets.find((item) => item._id === assetId);
+        if (asset) setWatchlist((prev) => [...prev, asset]);
+        toast.success("Added to watchlist.");
+      }
+    } catch (err) {
+      console.error("Watchlist update failed", err);
+      toast.error("Could not update your watchlist.");
+    } finally {
+      setSavingWatchId(null);
+    }
+  };
+
+  const toggleCompare = (assetId) => {
+    setSelectedCompare((current) => {
+      if (current.includes(assetId)) return current.filter((id) => id !== assetId);
+      if (current.length >= 3) {
+        toast.error("Compare up to 3 assets only.");
+        return current;
+      }
+      return [...current, assetId];
+    });
+  };
+
+  const filteredAssets = useMemo(() => {
+    const normalized = search.trim().toLowerCase();
+    return assets
+      .filter((asset) => {
+        if (!normalized) return true;
+        return (
+          asset.symbol.toLowerCase().includes(normalized) ||
+          asset.name.toLowerCase().includes(normalized)
+        );
+      })
+      .sort((a, b) => b.currentPrice - a.currentPrice);
+  }, [assets, search]);
 
   // safer loading check
   if (loading && assets.length === 0) {
@@ -49,8 +131,24 @@ export default function Market() {
   }
 
   return (
-    <div className="p-4">
-      <h1 className="text-3xl font-bold mb-6">Live Market</h1>
+    <div className="space-y-8 p-4">
+      <LiveTicker maxItems={12} />
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Live Market</p>
+            <h1 className="text-3xl font-bold text-slate-900">Explore the latest asset momentum</h1>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-3xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
+              Watchlist: {watchlist.length} asset{watchlist.length === 1 ? "" : "s"}
+            </div>
+            <div className="rounded-3xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
+              Compare: {selectedCompare.length} / 3
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="grid grid-flow-col auto-cols-[minmax(280px,1fr)] gap-6 overflow-x-auto md:grid-flow-row md:grid-cols-3 lg:grid-cols-4 md:auto-cols-auto snap-x snap-mandatory hide-scrollbar py-2">
         {(assets || []).map((asset) => {
@@ -104,11 +202,29 @@ export default function Market() {
                 </p>
               </div>
 
-              <Link to={`/asset/${asset._id}`}>
-                <button className="mt-6 w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-700 active:scale-95 transition-transform">
-                  Explore & Trade
+              <div className="mt-6 grid gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleToggleWatchlist(asset._id)}
+                  disabled={savingWatchId === asset._id}
+                  className={`w-full rounded-lg px-4 py-2 text-sm font-semibold ${watchlist.some((item) => item._id === asset._id) ? "bg-slate-900 text-white hover:bg-slate-800" : "bg-teal-600 text-white hover:bg-teal-700"} ${savingWatchId === asset._id ? "opacity-70 cursor-not-allowed" : ""}`}
+                >
+                  {savingWatchId === asset._id ? "Updating..." : watchlist.some((item) => item._id === asset._id) ? "Saved" : "Track"}
                 </button>
-              </Link>
+                <button
+                  type="button"
+                  onClick={() => toggleCompare(asset._id)}
+                  className={`w-full rounded-lg px-4 py-2 text-sm font-semibold ${selectedCompare.includes(asset._id) ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
+                >
+                  {selectedCompare.includes(asset._id) ? "Selected" : "Compare"}
+                </button>
+                <Link
+                  to={`/asset/${asset._id}`}
+                  className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                >
+                  View details
+                </Link>
+              </div>
             </div>
           );
         })}

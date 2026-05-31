@@ -41,6 +41,25 @@ marketRoute.get("/asset/:id", async (req, res, next) => {
 });
 
 /**
+ * @route   GET /api/market/compare
+ * @desc    Compare multiple assets by their current values and market metrics
+ * @access  Public
+ */
+marketRoute.get("/compare", async (req, res, next) => {
+  try {
+    const ids = (req.query.ids || "").split(",").filter(Boolean);
+    if (ids.length === 0) {
+      return res.status(400).json({ message: "Provide at least two asset IDs in the query string." });
+    }
+
+    const assets = await AssetModel.find({ _id: { $in: ids }, isActive: true });
+    res.status(200).json({ message: "Comparison payload", payload: assets });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
  * @route   GET /api/market/top-gainers
  * @desc    Get top assets sorted by current market value (Highest price ceiling)
  * @access  Public

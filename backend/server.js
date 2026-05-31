@@ -7,6 +7,10 @@ import http from "http"; // Required for Socket.io
 import { Server } from "socket.io"; // Socket.io server
 import { AssetModel } from "./models/AssetModel.js"; // Import your model
 import { AlertModel } from "./models/AlertModel.js"; // IMPORT ALERTS MODEL
+import { PortfolioModel } from "./models/PortfolioModel.js";
+import { OrderModel } from "./models/OrderModel.js";
+import { UserModel } from "./models/UserModel.js";
+import { ConditionalOrderModel } from "./models/ConditionalOrderModel.js";
 
 // Import Trading Platform APIs
 import { authRoute } from "./APIs/AuthAPI.js";
@@ -99,11 +103,9 @@ const startPriceSimulation = () => {
           }
 
           if (shouldTrigger) {
-            // Persistent flag update to mark completion
             rule.isTriggered = true;
             await rule.save();
 
-            // Direct real-time push to the user's isolated socket private room channel
             io.to(rule.user.toString()).emit("price-alert-notification", {
               message: `ALERT: ${update.symbol} crossed your setup target of $${rule.targetPrice}!`,
               symbol: update.symbol,
@@ -111,7 +113,59 @@ const startPriceSimulation = () => {
             });
           }
         }
+
+      // C. Scan pending conditional stop-loss / take-profit orders and execute them automatically
+      const pendingOrders = await ConditionalOrderModel.find({ asset: update._id, executed: false }).populate("user");
+      for (const order of pendingOrders) {
+        const price = update.currentPrice;
+        const isTriggered =
+          (order.triggerType === "TAKE_PROFIT" && price >= order.triggerPrice) ||
+          (order.triggerType === "STOP_LOSS" && price <= order.triggerPrice);
+
+        if (!isTriggered) continue;
+
+        const portfolioItem = await PortfolioModel.findOne({ user: order.user._id, asset: update._id });
+        if (!portfolioItem || portfolioItem.quantity < order.quantity) {
+          order.status = "FAILED";
+          order.executed = true;
+          await order.save();
+          continue;
+        }
+
+        const totalRevenue = parseFloat((price * order.quantity).toFixed(2));
+        const trader = await UserModel.findById(order.user._id);
+        trader.walletBalance += totalRevenue;
+        await trader.save();
+
+        portfolioItem.quantity -= order.quantity;
+        if (portfolioItem.quantity <= 0) {
+          await PortfolioModel.deleteOne({ _id: portfolioItem._id });
+        } else {
+          await portfolioItem.save();
+        }
+
+        await OrderModel.create({
+          user: order.user._id,
+          asset: update._id,
+          orderType: "SELL",
+          quantity: order.quantity,
+          priceAtExecution: price,
+          totalAmount: totalRevenue,
+          status: "COMPLETED"
+        });
+
+        order.status = "EXECUTED";
+        order.executed = true;
+        await order.save();
+
+        io.to(order.user._id.toString()).emit("conditional-order-triggered", {
+          message: `${update.symbol} ${order.triggerType.replace("_", " ")} executed at $${price} for ${order.quantity} shares.`,
+          asset: update.symbol,
+          triggeredPrice: price,
+          orderType: order.triggerType,
+        });
       }
+    }
 
       // 3. Broadcast new prices to all connected users
       io.emit("market-data-update", updates);

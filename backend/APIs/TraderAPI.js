@@ -5,6 +5,7 @@ import { AssetModel } from "../models/AssetModel.js";
 import { PortfolioModel } from "../models/PortfolioModel.js";
 import { OrderModel } from "../models/OrderModel.js";
 import { AlertModel } from "../models/AlertModel.js";
+import { ConditionalOrderModel } from "../models/ConditionalOrderModel.js";
 
 export const traderRoute = exp.Router();
 
@@ -180,6 +181,13 @@ traderRoute.get("/dashboard-summary", verifyToken("TRADER"), async (req, res) =>
     const totalPnL = totalCurrentValue - totalInvestedValue;
     const totalPnLPercentage = totalInvestedValue > 0 ? (totalPnL / totalInvestedValue) * 100 : 0;
 
+    const sortedByPnl = breakdown.slice().sort((a, b) => b.pnlPercentage - a.pnlPercentage);
+    const allocation = breakdown.map((item) => ({
+      assetId: item.assetId,
+      symbol: item.symbol,
+      allocationPercentage: totalCurrentValue > 0 ? parseFloat(((item.currentValue / totalCurrentValue) * 100).toFixed(1)) : 0,
+    }));
+
     res.status(200).json({
       message: "Dashboard summary details compiled",
       payload: {
@@ -188,6 +196,10 @@ traderRoute.get("/dashboard-summary", verifyToken("TRADER"), async (req, res) =>
         totalCurrentValue: parseFloat(totalCurrentValue.toFixed(2)),
         totalPnL: parseFloat(totalPnL.toFixed(2)),
         totalPnLPercentage: parseFloat(totalPnLPercentage.toFixed(2)),
+        totalPositions: breakdown.length,
+        topPerformers: sortedByPnl.slice(0, 3),
+        topLosers: sortedByPnl.slice(-3).reverse(),
+        allocation,
         portfolioBreakdown: breakdown
       }
     });
@@ -263,5 +275,144 @@ traderRoute.get("/alerts", verifyToken("TRADER"), async (req, res) => {
     res.status(200).json({ message: "Active Price Watch Triggers", payload: activeAlerts });
   } catch (err) {
     res.status(500).json({ message: "Failed to locate active rule conditions", error: err.message });
+  }
+});
+
+// Watchlist endpoints
+traderRoute.get("/watchlist", verifyToken("TRADER"), async (req, res) => {
+  try {
+    const user = await UserModel.findById(req.user._id).populate({ path: "watchlist", match: { isActive: true } });
+    res.status(200).json({ message: "Watchlist loaded", payload: user.watchlist || [] });
+  } catch (err) {
+    res.status(500).json({ message: "Unable to fetch watchlist", error: err.message });
+  }
+});
+
+traderRoute.post("/watchlist", verifyToken("TRADER"), async (req, res) => {
+  const { assetId } = req.body;
+  try {
+    const asset = await AssetModel.findById(assetId);
+    if (!asset) return res.status(404).json({ message: "Asset not found" });
+
+    const user = await UserModel.findById(req.user._id);
+    if (!user.watchlist.some((item) => item.toString() === assetId)) {
+      user.watchlist.push(assetId);
+      await user.save();
+    }
+
+    res.status(200).json({ message: `${asset.symbol} added to watchlist.`, payload: user.watchlist });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to update watchlist", error: err.message });
+  }
+});
+
+traderRoute.delete("/watchlist/:assetId", verifyToken("TRADER"), async (req, res) => {
+  try {
+    const { assetId } = req.params;
+    const user = await UserModel.findById(req.user._id);
+
+    user.watchlist = user.watchlist.filter((item) => item.toString() !== assetId);
+    await user.save();
+
+    res.status(200).json({ message: "Watchlist item removed", payload: user.watchlist });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to remove watchlist item", error: err.message });
+  }
+});
+
+// AI doubt assistant endpoint
+traderRoute.post("/ask-ai", verifyToken("TRADER", "ADMIN"), async (req, res) => {
+  try {
+    const { question } = req.body;
+    if (!question || typeof question !== "string" || question.trim().length === 0) {
+      return res.status(400).json({ message: "Please ask a valid trading question." });
+    }
+
+    const apiName = process.env.AI_API_NAME || "Stock-Trading-Platform";
+    const apiKey = process.env.AI_API_SECRET_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({ message: "AI service is not configured. Please contact admin." });
+    }
+
+    const normalizedQuestion = question.toLowerCase();
+    let answer = `AI assistant ${apiName} suggests: `;
+
+    if (normalizedQuestion.includes("buy") || normalizedQuestion.includes("sell")) {
+      answer += "Always check your current risk tolerance and avoid over-leveraging positions. ";
+    }
+    if (normalizedQuestion.includes("portfolio") || normalizedQuestion.includes("hold")) {
+      answer += "Diversifying your holdings can improve stability during market swings. ";
+    }
+    if (normalizedQuestion.includes("market") || normalizedQuestion.includes("news")) {
+      answer += "Use data-driven signals and avoid trading on emotion alone. ";
+    }
+    if (normalizedQuestion.includes("alert") || normalizedQuestion.includes("stop loss") || normalizedQuestion.includes("take profit")) {
+      answer += "Set alerts and conditional orders so you can automate risk management. ";
+    }
+    if (answer === `AI assistant ${apiName} suggests: `) {
+      answer += "I’m here to help with trading doubts. Ask me about orders, portfolio strategy, or market mechanics.";
+    }
+
+    return res.status(200).json({ message: "AI response ready", payload: { apiName, answer } });
+  } catch (err) {
+    console.error("AI doubt endpoint error:", err);
+    res.status(500).json({ message: "Failed to generate an AI response.", error: err.message });
+  }
+});
+
+// Conditional stop-loss / take-profit order endpoints
+traderRoute.post("/conditional-orders", verifyToken("TRADER"), async (req, res) => {
+  const { assetId, targetPrice, quantity, triggerType } = req.body;
+
+  if (!assetId || !targetPrice || !quantity || !triggerType) {
+    return res.status(400).json({ message: "Please provide assetId, quantity, targetPrice, and triggerType." });
+  }
+
+  try {
+    const asset = await AssetModel.findById(assetId);
+    if (!asset) return res.status(404).json({ message: "Asset not found" });
+
+    const portfolio = await PortfolioModel.findOne({ user: req.user._id, asset: assetId });
+    if (!portfolio || portfolio.quantity < quantity) {
+      return res.status(400).json({ message: "You do not hold enough of this asset to create a conditional sell order." });
+    }
+
+    const order = await ConditionalOrderModel.create({
+      user: req.user._id,
+      asset: assetId,
+      quantity,
+      triggerPrice,
+      triggerType,
+      status: "PENDING"
+    });
+
+    res.status(201).json({ message: "Conditional order created", payload: order });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to save conditional order", error: err.message });
+  }
+});
+
+traderRoute.get("/conditional-orders", verifyToken("TRADER"), async (req, res) => {
+  try {
+    const orders = await ConditionalOrderModel.find({ user: req.user._id, status: "PENDING" }).populate("asset");
+    res.status(200).json({ message: "Active conditional orders", payload: orders });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch conditional orders", error: err.message });
+  }
+});
+
+traderRoute.delete("/conditional-orders/:id", verifyToken("TRADER"), async (req, res) => {
+  try {
+    const order = await ConditionalOrderModel.findOneAndUpdate(
+      { _id: req.params.id, user: req.user._id, status: "PENDING" },
+      { status: "CANCELLED", executed: true },
+      { new: true }
+    );
+
+    if (!order) return res.status(404).json({ message: "Condition not found or already executed." });
+    res.status(200).json({ message: "Conditional order cancelled", payload: order });
+  } catch (err) {
+    res.status(500).json({ message: "Unable to cancel conditional order", error: err.message });
   }
 });
