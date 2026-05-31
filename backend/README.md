@@ -5,8 +5,8 @@ A complete Node.js + Express + MongoDB backend for a full-stack MERN real-time p
 ## Deployed Links
 
 * **Backend API URL:** `http://localhost:4000` (Development)
-* **Deployed Backend URL:** `https://stock-trading-simulation-ld2b.onrender.com` 
-* **Frontend URL:** `https://stock-trading-simulation.vercel.app`
+* **Deployed Backend URL:** `https://your-backend-deployment.onrender.com` 
+* **Frontend URL:** `https://your-frontend-deployment.vercel.app`
 
 ---
 

@@ -1,6 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
-import BASE_URL from "./config/baseAPI";
+import baseAPI from "./config/baseAPI";
 
 export default function AdminDashboard() {
   const [assetForm, setAssetForm] = useState({ symbol: "", name: "", currentPrice: 0, marketCap: 0 });
@@ -8,7 +7,7 @@ export default function AdminDashboard() {
   const handleListAsset = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${BASE_URL}/admin-api/asset`, assetForm, { withCredentials: true });
+      await baseAPI.post("/api/admin/asset", assetForm);
       alert("New asset listed successfully!");
       setAssetForm({ symbol: "", name: "", currentPrice: 0, marketCap: 0 });
     } catch (err) {

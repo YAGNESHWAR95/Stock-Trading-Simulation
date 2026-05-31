@@ -4,8 +4,8 @@ A comprehensive React-based frontend for a full-stack MERN real-time paper tradi
 
 ## Deployed Links
 
-* **Frontend Deployed URL:** `https://stock-trading-simulation.vercel.app`
-* **Backend API URL:** `https://stock-trading-simulation-ld2b.onrender.com`
+* **Frontend Deployed URL:** `https://your-frontend-deployment.vercel.app`
+* **Backend API URL:** `https://your-backend-deployment.onrender.com`
 
 ---
 

@@ -28,8 +28,7 @@ const PORT = process.env.PORT || 4000;
 const server = http.createServer(app);
 
 // 2. Initialize Socket.io
-const defaultFrontendUrl = "https://stock-trading-simulation.vercel.app";
-const allowedOrigins = ["http://localhost:5173", process.env.FRONTEND_URL || defaultFrontendUrl].filter(Boolean);
+const allowedOrigins = ["http://localhost:5173", process.env.FRONTEND_URL].filter(Boolean);
 
 const io = new Server(server, {
   cors: {
