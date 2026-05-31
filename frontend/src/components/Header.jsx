@@ -28,7 +28,10 @@ export default function Header() {
               {currentUser?.role === "ADMIN" ? (
                 <Link to="/admin-dashboard" className="hover:text-green-400 transition">Admin Panel</Link>
               ) : (
-                <Link to="/trader-dashboard" className="hover:text-green-400 transition">Dashboard</Link>
+                <>
+                  <Link to="/trader-dashboard" className="hover:text-green-400 transition">Dashboard</Link>
+                  <Link to="/trader-dashboard/ai" className="hover:text-green-400 transition">Ask AI</Link>
+                </>
               )}
               
               {/* User Info & Logout */}

@@ -139,13 +139,21 @@ export default function Market() {
             <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Live Market</p>
             <h1 className="text-3xl font-bold text-slate-900">Explore the latest asset momentum</h1>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-3xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
               Watchlist: {watchlist.length} asset{watchlist.length === 1 ? "" : "s"}
             </div>
             <div className="rounded-3xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
               Compare: {selectedCompare.length} / 3
             </div>
+            {isAuthenticated && (
+              <Link
+                to="/trader-dashboard/ai"
+                className="rounded-3xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition"
+              >
+                Ask AI Assistant
+              </Link>
+            )}
           </div>
         </div>
       </div>
