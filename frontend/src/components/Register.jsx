@@ -40,12 +40,12 @@ export default function Register() {
       {/* Decorative backdrop aura */}
       <div className="absolute inset-0 -z-10 bg-emerald-500/10 rounded-3xl blur-2xl pointer-events-none" />
 
-      <div className="glass-panel p-8 rounded-2xl shadow-2xl border border-white/5 relative z-10 space-y-6">
+      <div className="glass-panel p-8 rounded-2xl shadow-2xl border border-[var(--border-glass)] relative z-10 space-y-6 transition-colors duration-300">
         
         {/* Title Block */}
         <div className="text-center space-y-1.5">
-          <h2 className="text-2xl font-display font-black text-white tracking-wide">Create Account</h2>
-          <p className="text-xs text-slate-400">Join TradePro virtual simulation platform</p>
+          <h2 className="text-2xl font-display font-black text-[hsl(var(--text-main))] tracking-wide">Create Account</h2>
+          <p className="text-xs text-[hsl(var(--text-muted))]">Join TradePro virtual simulation platform</p>
         </div>
         
         {/* Input Form */}
@@ -54,7 +54,7 @@ export default function Register() {
           {/* First & Last Name Sub-Grid */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">First Name</label>
+              <label className="block text-[10px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider">First Name</label>
               <input 
                 type="text" placeholder="Alex" required 
                 className="premium-input w-full px-3 py-2.5 rounded-xl text-sm" 
@@ -63,7 +63,7 @@ export default function Register() {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Last Name</label>
+              <label className="block text-[10px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider">Last Name</label>
               <input 
                 type="text" placeholder="Mercer" 
                 className="premium-input w-full px-3 py-2.5 rounded-xl text-sm" 
@@ -75,7 +75,7 @@ export default function Register() {
           
           {/* Email Address */}
           <div className="space-y-1.5">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Email Address</label>
+            <label className="block text-[10px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider">Email Address</label>
             <input 
               type="email" placeholder="trader@example.com" required 
               className="premium-input w-full px-4 py-2.5 rounded-xl text-sm" 
@@ -86,7 +86,7 @@ export default function Register() {
           
           {/* Password */}
           <div className="space-y-1.5">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Password</label>
+            <label className="block text-[10px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider">Password</label>
             <input 
               type="password" placeholder="Min. 8 characters" required 
               className="premium-input w-full px-4 py-2.5 rounded-xl text-sm" 
@@ -96,9 +96,9 @@ export default function Register() {
           </div>
 
           {/* Regulatory Compliance PDF Drawer */}
-          <div className="bg-slate-900/60 p-4 rounded-xl border border-white/5 space-y-2 mt-4">
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Regulatory Compliance</span>
-            <p className="text-[10px] text-slate-500 leading-relaxed">
+          <div className="bg-[hsl(var(--color-tertiary))]/60 p-4 rounded-xl border border-[var(--border-glass)] space-y-2 mt-4">
+            <span className="text-[9px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-widest block">Regulatory Compliance</span>
+            <p className="text-[10px] text-[hsl(var(--text-muted))]/90 leading-relaxed">
               To ensure investor protection, SEBI requires all market participants to review the standard operating procedures and risk disclosures.
             </p>
             
@@ -106,9 +106,9 @@ export default function Register() {
               href="/sebi-guidelines.pdf" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-400 hover:text-indigo-300 transition hover:underline"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-500 hover:text-indigo-400 transition hover:underline"
             >
-              <svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <span>Download Official SEBI Guidelines (PDF)</span>
@@ -120,11 +120,11 @@ export default function Register() {
             <input 
               type="checkbox" 
               id="accept-terms" 
-              className="mt-0.5 h-4 w-4 border-white/10 rounded bg-slate-950 focus:ring-indigo-500 cursor-pointer"
+              className="mt-0.5 h-4 w-4 border-[var(--border-glass)] rounded bg-[hsl(var(--color-primary))] focus:ring-indigo-500 cursor-pointer"
               checked={acceptedTerms}
               onChange={(e) => setAcceptedTerms(e.target.checked)}
             />
-            <label htmlFor="accept-terms" className="text-[11px] text-slate-400 leading-snug cursor-pointer select-none">
+            <label htmlFor="accept-terms" className="text-[11px] text-[hsl(var(--text-muted))] leading-snug cursor-pointer select-none">
               I confirm that I have reviewed the SEBI guidelines and I **Accept and Continue** with this virtual trading simulation.
             </label>
           </div>
@@ -135,7 +135,7 @@ export default function Register() {
             className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all duration-200 ${
               acceptedTerms 
               ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-[0_0_15px_rgba(99,102,241,0.25)] hover:scale-[1.01] active:scale-95 cursor-pointer" 
-              : "bg-slate-900 text-slate-600 border border-white/5 cursor-not-allowed"
+              : "bg-[hsl(var(--color-tertiary))] text-[hsl(var(--text-muted))]/40 border border-[var(--border-glass)] cursor-not-allowed"
             }`}
           >
             Create Account
@@ -143,9 +143,9 @@ export default function Register() {
         </form>
 
         {/* Footer Account Prompt */}
-        <div className="text-center text-xs text-slate-400">
+        <div className="text-center text-xs text-[hsl(var(--text-muted))]">
           Already have an account?{" "}
-          <Link to="/login" className="text-indigo-400 font-bold hover:text-indigo-300 hover:underline">
+          <Link to="/login" className="text-indigo-500 font-bold hover:text-indigo-400 hover:underline">
             Log in
           </Link>
         </div>

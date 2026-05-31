@@ -3,35 +3,34 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 export default function TraderDashboard() {
   const location = useLocation();
 
-  // Helper function to dynamically highlight the active navigation tab
   const isActiveTab = (path) => {
     if (path === "" && location.pathname === "/trader-dashboard") return true;
     return location.pathname === `/trader-dashboard/${path}`;
   };
 
   const navStyles = (path) =>
-    `inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border transition-all duration-200 cursor-pointer ${
+    `inline-flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-xl border transition-all duration-200 cursor-pointer ${
       isActiveTab(path)
-        ? "bg-indigo-600/20 text-indigo-300 border-indigo-500/30 shadow-[0_0_12px_rgba(99,102,241,0.15)]"
-        : "bg-slate-900/40 text-slate-400 border-white/5 hover:text-slate-200 hover:bg-slate-800/40"
+        ? "bg-[hsl(var(--color-accent-indigo))]/10 text-[hsl(var(--color-accent-indigo))] border-[hsl(var(--color-accent-indigo))]/30 shadow-[0_0_12px_rgba(99,102,241,0.1)]"
+        : "bg-[hsl(var(--color-tertiary))]/40 text-[hsl(var(--text-muted))] border-[var(--border-glass)] hover:text-[hsl(var(--text-main))] hover:bg-[hsl(var(--color-tertiary))]/60"
     }`;
 
   return (
     <div className="space-y-6">
       
       {/* Segmented Navigation Tab Header Bar */}
-      <div className="glass-panel p-4 rounded-2xl shadow-xl flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="glass-panel p-4 rounded-2xl shadow-xl flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between transition-colors duration-300">
         
         {/* Dashboard Title & Icon */}
         <div className="flex items-center space-x-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-tr from-indigo-500/20 to-teal-500/20 border border-indigo-500/20">
-            <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="p-2.5 rounded-xl bg-[hsl(var(--color-accent-indigo))]/15 border border-[hsl(var(--color-accent-indigo))]/20">
+            <svg className="w-6 h-6 text-[hsl(var(--color-accent-indigo))]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
             </svg>
           </div>
           <div>
-            <h2 className="text-lg font-display font-extrabold text-white leading-tight">Trader Command</h2>
-            <p className="text-[11px] text-slate-500 uppercase tracking-widest">Simulation Workspace</p>
+            <h2 className="text-lg font-display font-extrabold text-[hsl(var(--text-main))] leading-tight">Trader Command</h2>
+            <p className="text-[10px] text-[hsl(var(--text-muted))] font-bold uppercase tracking-widest">Simulation Workspace</p>
           </div>
         </div>
         
@@ -76,10 +75,10 @@ export default function TraderDashboard() {
           {/* Glowing CTA for Live Market Discovery */}
           <Link 
             to="/market" 
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 hover:scale-[1.01] transition-all duration-200 cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl bg-[hsl(var(--color-accent-teal))]/10 text-[hsl(var(--color-accent-teal))] border border-[hsl(var(--color-accent-teal))]/20 hover:bg-[hsl(var(--color-accent-teal))]/20 hover:scale-[1.01] transition-all duration-200 cursor-pointer"
           >
             <span>Live Feed</span>
-            <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-[hsl(var(--color-accent-teal))]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
           </Link>

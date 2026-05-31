@@ -125,7 +125,6 @@ export default function Market() {
     });
   };
 
-  // Safe loading spinner layout
   if (loading && assets.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 space-y-4">
@@ -133,7 +132,7 @@ export default function Market() {
           <div className="absolute top-0 left-0 w-full h-full border-4 border-indigo-500/20 rounded-full"></div>
           <div className="absolute top-0 left-0 w-full h-full border-4 border-t-indigo-500 rounded-full animate-spin"></div>
         </div>
-        <p className="text-slate-400 font-semibold text-sm">Synchronizing real-time market pipelines...</p>
+        <p className="text-[hsl(var(--text-muted))] font-semibold text-sm">Synchronizing real-time market pipelines...</p>
       </div>
     );
   }
@@ -145,21 +144,21 @@ export default function Market() {
       <LiveTicker maxItems={12} />
       
       {/* Market Discovery Dashboard Header */}
-      <div className="glass-panel p-6 rounded-2xl shadow-xl">
+      <div className="glass-panel p-6 rounded-2xl shadow-xl transition-colors duration-300">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Live Exchange</span>
-            <h1 className="text-2xl font-display font-black text-white leading-tight">Interactive Market Board</h1>
-            <p className="text-xs text-slate-400">Monitor continuous pricing shifts and analyze overall asset dynamics.</p>
+            <span className="text-[10px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-widest block">Live Exchange</span>
+            <h1 className="text-2xl font-display font-black text-[hsl(var(--text-main))] leading-tight">Interactive Market Board</h1>
+            <p className="text-xs text-[hsl(var(--text-muted))]">Monitor continuous pricing shifts and analyze overall asset dynamics.</p>
           </div>
           
           <div className="flex flex-wrap gap-2.5 items-center">
             
-            <div className="glass-panel bg-slate-900/30 text-xs font-bold text-slate-300 border border-white/5 rounded-xl px-4 py-3">
+            <div className="glass-panel bg-[hsl(var(--color-tertiary))]/40 text-xs font-bold text-[hsl(var(--text-muted))] border border-[var(--border-glass)] rounded-xl px-4 py-3">
               Watchlist: {watchlist.length}
             </div>
             
-            <div className="glass-panel bg-slate-900/30 text-xs font-bold text-slate-300 border border-white/5 rounded-xl px-4 py-3">
+            <div className="glass-panel bg-[hsl(var(--color-tertiary))]/40 text-xs font-bold text-[hsl(var(--text-muted))] border border-[var(--border-glass)] rounded-xl px-4 py-3">
               Compare: {selectedCompare.length} / 3
             </div>
 
@@ -207,30 +206,30 @@ export default function Market() {
                 {/* Symbol, Name and Badges */}
                 <div className="flex justify-between items-start gap-2">
                   <div className="space-y-0.5">
-                    <span className="font-display font-extrabold text-white text-lg block">{asset.symbol}</span>
-                    <span className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider block truncate max-w-[120px]">
+                    <span className="font-display font-extrabold text-[hsl(var(--text-main))] text-lg block">{asset.symbol}</span>
+                    <span className="text-[10px] text-[hsl(var(--text-muted))] font-bold uppercase tracking-wider block truncate max-w-[120px]">
                       {asset.name}
                     </span>
                   </div>
                   
                   <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wider ${
                     isUp 
-                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/15" 
+                      ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/15" 
                       : isDown 
-                      ? "bg-rose-500/10 text-rose-400 border border-rose-500/15" 
-                      : "bg-slate-900 border border-white/5 text-slate-400"
+                      ? "bg-rose-500/10 text-rose-500 border border-rose-500/15" 
+                      : "bg-[hsl(var(--color-tertiary))] border border-[var(--border-glass)] text-[hsl(var(--text-muted))]"
                   }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${isUp ? "bg-emerald-400 animate-pulse" : isDown ? "bg-rose-400 animate-pulse" : "bg-slate-400"}`} />
+                    <span className={`w-1.5 h-1.5 rounded-full ${isUp ? "bg-emerald-500 animate-pulse" : isDown ? "bg-rose-500 animate-pulse" : "bg-slate-400"}`} />
                     LIVE
                   </span>
                 </div>
 
                 {/* Main Dynamic Price Indicator */}
                 <div className="space-y-1">
-                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">Spot Price</span>
+                  <span className="text-[9px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-widest block">Spot Price</span>
                   <div className="flex items-baseline gap-1.5">
                     <span className={`text-2xl font-mono font-extrabold tracking-tight transition-colors duration-300 ${
-                      isUp ? "text-emerald-400 neon-text-green" : isDown ? "text-rose-400 neon-text-red" : "text-white"
+                      isUp ? "text-emerald-500 neon-text-green" : isDown ? "text-rose-500 neon-text-red" : "text-[hsl(var(--text-main))]"
                     }`}>
                       ${asset.currentPrice?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
@@ -246,8 +245,8 @@ export default function Market() {
                     disabled={savingWatchId === asset._id}
                     className={`inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-bold transition duration-200 cursor-pointer ${
                       watchlist.some((item) => item._id === asset._id)
-                        ? "bg-slate-900 text-slate-200 border border-white/5 hover:bg-slate-800"
-                        : "bg-indigo-600/15 text-indigo-400 border border-indigo-500/10 hover:bg-indigo-600/25"
+                        ? "bg-[hsl(var(--color-tertiary))] text-[hsl(var(--text-main))] border border-[var(--border-glass)] hover:bg-[hsl(var(--color-tertiary))]/80"
+                        : "bg-indigo-600/15 text-indigo-500 border border-indigo-500/10 hover:bg-indigo-600/25"
                     } ${savingWatchId === asset._id ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -266,7 +265,7 @@ export default function Market() {
                     className={`inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-bold transition duration-200 cursor-pointer ${
                       selectedCompare.includes(asset._id)
                         ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                        : "bg-slate-900 text-slate-400 border border-white/5 hover:bg-slate-800/80 hover:text-slate-300"
+                        : "bg-[hsl(var(--color-tertiary))]/40 text-[hsl(var(--text-muted))] border border-[var(--border-glass)] hover:bg-[hsl(var(--color-tertiary))]/80 hover:text-[hsl(var(--text-main))]"
                     }`}
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -277,7 +276,7 @@ export default function Market() {
 
                   <Link
                     to={`/asset/${asset._id}`}
-                    className="col-span-2 inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 border border-white/10 hover:border-indigo-500/20 px-4 py-2.5 text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition duration-200"
+                    className="col-span-2 inline-flex items-center justify-center gap-1.5 rounded-xl bg-[hsl(var(--color-tertiary))]/60 border border-[var(--border-glass)] hover:border-indigo-500/20 px-4 py-2.5 text-xs font-bold text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-main))] hover:bg-[hsl(var(--color-tertiary))] transition duration-200"
                   >
                     <span>View Workspace</span>
                     <svg className="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

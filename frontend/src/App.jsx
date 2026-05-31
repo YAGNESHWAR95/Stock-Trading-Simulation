@@ -2,7 +2,8 @@
 import { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { useAuth } from "./store/authStore"; // Adjust this path if your store folder is located somewhere else
+import { useAuth } from "./store/authStore";
+import { useTheme } from "./store/themeStore";
 
 
 // Layout & Utility Components
@@ -35,13 +36,13 @@ import AiDoubts from "./components/AiDoubts";
 // main app function
 function App() {
   const { checkAuth } = useAuth();
+  const { initTheme } = useTheme();
 
-  // Trigger the authentication verify check as soon as the React app mounts/refreshes
+  // Initialize active theme parameters and check user auth session on load
   useEffect(() => {
-    if (checkAuth) {
-      checkAuth();
-    }
-  }, [checkAuth]);
+    if (initTheme) initTheme();
+    if (checkAuth) checkAuth();
+  }, [checkAuth, initTheme]);
 
   // create the router
   const routerObj = createBrowserRouter([

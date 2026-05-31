@@ -33,21 +33,21 @@ export default function Login() {
   return (
     <div className="max-w-md mx-auto my-12 relative">
       {/* Decorative backdrop aura */}
-      <div className="absolute inset-0 -z-10 bg-indigo-500/10 rounded-3xl blur-2xl pointer-events-none" />
+      <div className="absolute inset-0 -z-10 bg-indigo-500/5 rounded-3xl blur-2xl pointer-events-none" />
 
-      <div className="glass-panel p-8 rounded-2xl shadow-2xl border border-white/5 relative z-10 space-y-6">
+      <div className="glass-panel p-8 rounded-2xl shadow-2xl border border-[var(--border-glass)] relative z-10 space-y-6 transition-colors duration-300">
         
         {/* Title Block */}
         <div className="text-center space-y-1.5">
-          <h2 className="text-2xl font-display font-black text-white tracking-wide">Welcome Back</h2>
-          <p className="text-xs text-slate-400">Log in to manage your paper portfolio</p>
+          <h2 className="text-2xl font-display font-black text-[hsl(var(--text-main))] tracking-wide">Welcome Back</h2>
+          <p className="text-xs text-[hsl(var(--text-muted))]">Log in to manage your paper portfolio</p>
         </div>
 
         {/* Input Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Email Address</label>
+            <label className="block text-xs font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider">Email Address</label>
             <input 
               type="email" 
               required 
@@ -60,8 +60,8 @@ export default function Login() {
           
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Password</label>
-              <Link to="/forgot-password" className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 hover:underline">
+              <label className="block text-xs font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider">Password</label>
+              <Link to="/forgot-password" className="text-xs font-semibold text-indigo-500 hover:text-indigo-400 hover:underline">
                 Forgot password?
               </Link>
             </div>
@@ -86,9 +86,9 @@ export default function Login() {
 
         {/* Separator */}
         <div className="relative flex py-2 items-center">
-          <div className="flex-grow border-t border-white/5"></div>
-          <span className="flex-shrink mx-4 text-slate-500 text-xs font-semibold uppercase tracking-wider">or</span>
-          <div className="flex-grow border-t border-white/5"></div>
+          <div className="flex-grow border-t border-[var(--border-glass)]"></div>
+          <span className="flex-shrink mx-4 text-[hsl(var(--text-muted))]/60 text-xs font-semibold uppercase tracking-wider">or</span>
+          <div className="flex-grow border-t border-[var(--border-glass)]"></div>
         </div>
 
         {/* Google OAuth Button */}
@@ -96,7 +96,7 @@ export default function Login() {
           <button
             type="button"
             onClick={() => window.location.href = `${import.meta.env.VITE_BACKEND_URL || "http://localhost:4000"}/api/auth/google`}
-            className="w-full flex items-center justify-center gap-3 bg-slate-900/50 hover:bg-slate-900 border border-white/10 rounded-xl py-3 text-slate-200 hover:text-white transition duration-200 cursor-pointer text-sm font-semibold"
+            className="w-full flex items-center justify-center gap-3 bg-[hsl(var(--color-tertiary))]/40 hover:bg-[hsl(var(--color-tertiary))] border border-[var(--border-glass)] rounded-xl py-3 text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-main))] transition duration-200 cursor-pointer text-sm font-bold"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -109,10 +109,10 @@ export default function Login() {
         </div>
 
         {/* Footer Account Prompt */}
-        <div className="text-center text-xs text-slate-400 space-y-1">
+        <div className="text-center text-xs text-[hsl(var(--text-muted))] space-y-1">
           <p>
             Don't have an account?{" "}
-            <Link to="/register" className="text-indigo-400 font-bold hover:text-indigo-300 hover:underline">
+            <Link to="/register" className="text-indigo-500 font-bold hover:text-indigo-400 hover:underline">
               Sign up
             </Link>
           </p>
