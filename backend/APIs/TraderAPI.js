@@ -335,24 +335,37 @@ traderRoute.post("/ask-ai", verifyToken("TRADER", "ADMIN"), async (req, res) => 
       return res.status(500).json({ message: "AI service is not configured. Please contact admin." });
     }
 
-    const normalizedQuestion = question.toLowerCase();
-    let answer = `AI assistant ${apiName} suggests: `;
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          {
+            role: "system",
+            content: "You are a helpful and highly knowledgeable virtual trading AI assistant. Provide concise, clear, and accurate answers to user questions about trading, stocks, crypto, markets, and investment strategies."
+          },
+          {
+            role: "user",
+            content: question
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 1024
+      })
+    });
 
-    if (normalizedQuestion.includes("buy") || normalizedQuestion.includes("sell")) {
-      answer += "Always check your current risk tolerance and avoid over-leveraging positions. ";
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("Groq API error:", errorData);
+      throw new Error(errorData.error?.message || `Groq API responded with status ${response.status}`);
     }
-    if (normalizedQuestion.includes("portfolio") || normalizedQuestion.includes("hold")) {
-      answer += "Diversifying your holdings can improve stability during market swings. ";
-    }
-    if (normalizedQuestion.includes("market") || normalizedQuestion.includes("news")) {
-      answer += "Use data-driven signals and avoid trading on emotion alone. ";
-    }
-    if (normalizedQuestion.includes("alert") || normalizedQuestion.includes("stop loss") || normalizedQuestion.includes("take profit")) {
-      answer += "Set alerts and conditional orders so you can automate risk management. ";
-    }
-    if (answer === `AI assistant ${apiName} suggests: `) {
-      answer += "I’m here to help with trading doubts. Ask me about orders, portfolio strategy, or market mechanics.";
-    }
+
+    const data = await response.json();
+    const answer = data.choices?.[0]?.message?.content || "No response received from AI.";
 
     return res.status(200).json({ message: "AI response ready", payload: { apiName, answer } });
   } catch (err) {

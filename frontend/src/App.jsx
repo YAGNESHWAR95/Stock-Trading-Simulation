@@ -118,6 +118,10 @@ function App() {
               path: "news", // /trader-dashboard/news
               element: <MarketNews />,
             },
+            {
+              path: "ai", // /trader-dashboard/ai
+              element: <AiDoubts />,
+            },
           ],
         },
         {
