@@ -20,7 +20,7 @@ export default function AiDoubts() {
     setStatus("loading");
 
     try {
-      const res = await baseAPI.post("/trader/ask-ai", { question });
+      const res = await baseAPI.post("/api/ai/ask", { question });
       setAnswer(res.data.payload.answer);
       setStatus("success");
     } catch (err) {

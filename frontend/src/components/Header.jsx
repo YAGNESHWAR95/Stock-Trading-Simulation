@@ -30,7 +30,7 @@ export default function Header() {
               ) : (
                 <>
                   <Link to="/trader-dashboard" className="hover:text-green-400 transition">Dashboard</Link>
-                  <Link to="/trader-dashboard/ai" className="hover:text-green-400 transition">Ask AI</Link>
+                  <Link to="/ai" className="hover:text-green-400 transition">Ask AI</Link>
                 </>
               )}
               

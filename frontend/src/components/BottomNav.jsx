@@ -5,7 +5,7 @@ import { useNews } from "../store/newsStore";
 const navItems = [
   { label: "Home", to: "/", icon: "🏠" },
   { label: "Market", to: "/market", icon: "📈" },
-  { label: "Ask AI", to: "/trader-dashboard/ai", icon: "🤖" },
+  { label: "Ask AI", to: "/ai", icon: "🤖" },
   { label: "News", to: "/trader-dashboard/news", icon: "📰" },
   { label: "Dashboard", to: "/trader-dashboard", icon: "📊" },
   { label: "Alerts", to: "/trader-dashboard/alerts", icon: "🔔" },

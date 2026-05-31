@@ -148,7 +148,7 @@ export default function Market() {
             </div>
             {isAuthenticated && (
               <Link
-                to="/trader-dashboard/ai"
+                to="/ai"
                 className="rounded-3xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition"
               >
                 Ask AI Assistant

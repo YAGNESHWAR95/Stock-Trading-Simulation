@@ -17,6 +17,7 @@ import { authRoute } from "./APIs/AuthAPI.js";
 import { marketRoute } from "./APIs/MarketAPI.js";
 import { traderRoute } from "./APIs/TraderAPI.js";
 import { adminRoute } from "./APIs/AdminAPI.js";
+import { aiRoute } from "./APIs/AiAPI.js";
 
 config();
 
@@ -51,6 +52,7 @@ app.use("/api/auth", authRoute);
 app.use("/api/market", marketRoute); 
 app.use("/api/trader", traderRoute); 
 app.use("/api/admin", adminRoute);   
+app.use("/api/ai", aiRoute); // Public AI assistant endpoints
 
 // --- SOCKET CONNECTION ROOM HANDLERS ---
 io.on("connection", (socket) => {

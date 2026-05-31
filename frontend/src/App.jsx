@@ -79,6 +79,10 @@ function App() {
           ),
         },
         {
+          path: "ai",
+          element: <AiDoubts />,
+        },
+        {
           path: "asset/:id",
           element: (
             <ProtectedRoute allowedRoles={["TRADER", "ADMIN"]}>
@@ -113,10 +117,6 @@ function App() {
             {
               path: "news", // /trader-dashboard/news
               element: <MarketNews />,
-            },
-            {
-              path: "ai", // /trader-dashboard/ai
-              element: <AiDoubts />,
             },
           ],
         },
