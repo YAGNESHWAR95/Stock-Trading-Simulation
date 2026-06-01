@@ -18,105 +18,120 @@ export default function MarketNews() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Market News & Sentiment</h1>
-          <p className="text-sm text-slate-500">Live feed updated periodically — unread: {unreadCount}</p>
-        </div>
-        <div>
-          <button onClick={markAllRead} className="rounded-lg bg-slate-100 px-3 py-2 text-sm">Mark all read</button>
+    <div className="space-y-6 transition-colors duration-300">
+      
+      {/* Header Panel */}
+      <div className="glass-panel p-6 rounded-3xl border border-[var(--border-glass)] shadow-xl relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="space-y-1">
+            <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest block">Intelligence Feed</span>
+            <h1 className="text-2xl font-display font-black text-[hsl(var(--text-main))]">Market News & Sentiment</h1>
+            <p className="text-xs text-[hsl(var(--text-muted))]">Live sentiment analyzer feeds · Unread: <span className="font-bold text-rose-400">{unreadCount}</span></p>
+          </div>
+          <button 
+            onClick={markAllRead} 
+            className="self-start sm:self-center bg-[hsl(var(--color-tertiary))] border border-[var(--border-glass)] px-4 py-2.5 rounded-xl text-xs font-bold text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-main))] hover:bg-[hsl(var(--color-tertiary))]/80 hover:scale-[1.01] active:scale-95 transition-all duration-200 cursor-pointer"
+          >
+            Mark All Read
+          </button>
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-        <section className="rounded-3xl bg-slate-950/95 border border-slate-800 p-6 text-white shadow-xl">
+      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+        
+        {/* Sentiment Pulse Monitor */}
+        <section className="glass-panel rounded-3xl border border-[var(--border-glass)] p-6 sm:p-8 shadow-xl relative overflow-hidden flex flex-col justify-between">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Market Sentiment Pulse</p>
-              <h2 className="mt-3 text-3xl font-semibold">Live News & Sentiment Meter</h2>
+            <div className="space-y-1">
+              <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest block">Pulse Index</span>
+              <h2 className="text-xl font-display font-black text-[hsl(var(--text-main))]">Live Sentiment Meter</h2>
             </div>
-            <div className="rounded-3xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-sm font-semibold text-slate-100">
+            <span className="rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/15 px-4 py-2 text-xs font-bold font-mono">
               {sentiment.label}
-            </div>
-          </div>
-
-          <div className="mt-6 rounded-3xl bg-slate-900/90 p-4">
-            <div className="flex items-center justify-between text-sm text-slate-300">
-              <span>Overall sentiment</span>
-              <span>{percentage}% confidence</span>
-            </div>
-            <div className="mt-3 h-4 rounded-full bg-slate-800">
-              <div className={`h-4 rounded-full ${sentimentColor(sentiment.score)}`} style={{ width: `${percentage}%` }} />
-            </div>
-          </div>
-
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-3xl bg-slate-900/80 p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Bullish</p>
-              <p className="mt-3 text-3xl font-semibold text-emerald-400">{sentiment.bullishCount}</p>
-            </div>
-            <div className="rounded-3xl bg-slate-900/80 p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Bearish</p>
-              <p className="mt-3 text-3xl font-semibold text-rose-400">{sentiment.bearishCount}</p>
-            </div>
-            <div className="rounded-3xl bg-slate-900/80 p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Neutral</p>
-              <p className="mt-3 text-3xl font-semibold text-slate-200">{sentiment.neutralCount}</p>
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-3xl bg-white border border-slate-200 p-6 shadow-sm">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-slate-500">Live Market Feed</p>
-              <h2 className="mt-2 text-2xl font-semibold text-slate-900">Trending News Stories</h2>
-            </div>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">
-              {feed.length} items
             </span>
           </div>
 
-          <div className="mt-5 rounded-3xl border border-slate-100 bg-slate-50 p-4">
-            <p className="text-sm text-slate-500">{error || 'Live headlines are fetched from the backend to mirror a real market stream.'}</p>
+          <div className="mt-6 rounded-2xl bg-[hsl(var(--color-tertiary))]/50 border border-[var(--border-glass)] p-5">
+            <div className="flex items-center justify-between text-xs font-bold text-[hsl(var(--text-muted))]">
+              <span>Overall Market Sentiment</span>
+              <span className="font-mono">{percentage}% Confidence</span>
+            </div>
+            <div className="mt-3 h-3.5 rounded-full bg-[hsl(var(--color-tertiary))] overflow-hidden border border-[var(--border-glass)]">
+              <div className={`h-full rounded-full transition-all duration-500 ${sentimentColor(sentiment.score)}`} style={{ width: `${percentage}%` }} />
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            <div className="rounded-2xl bg-[hsl(var(--color-tertiary))]/30 border border-[var(--border-glass)] p-4 text-center">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[hsl(var(--text-muted))]">Bullish Signals</p>
+              <p className="mt-2 text-3xl font-display font-black text-emerald-400 neon-text-green font-mono">{sentiment.bullishCount}</p>
+            </div>
+            <div className="rounded-2xl bg-[hsl(var(--color-tertiary))]/30 border border-[var(--border-glass)] p-4 text-center">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[hsl(var(--text-muted))]">Bearish Signals</p>
+              <p className="mt-2 text-3xl font-display font-black text-rose-400 neon-text-red font-mono">{sentiment.bearishCount}</p>
+            </div>
+            <div className="rounded-2xl bg-[hsl(var(--color-tertiary))]/30 border border-[var(--border-glass)] p-4 text-center">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[hsl(var(--text-muted))]">Neutral Signals</p>
+              <p className="mt-2 text-3xl font-display font-black text-[hsl(var(--text-main))] font-mono">{sentiment.neutralCount}</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Live Market headlines widget */}
+        <section className="glass-panel rounded-3xl border border-[var(--border-glass)] p-6 shadow-xl flex flex-col justify-between">
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-1">
+              <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest block">Exchange News</span>
+              <h2 className="text-lg font-display font-black text-[hsl(var(--text-main))]">Trending Headings</h2>
+            </div>
+            <span className="rounded-full bg-[hsl(var(--color-tertiary))] border border-[var(--border-glass)] px-3 py-1 text-[10px] font-bold text-[hsl(var(--text-muted))]">
+              {feed.length} Stories
+            </span>
+          </div>
+
+          <div className="mt-5 rounded-2xl border border-[var(--border-glass)] bg-[hsl(var(--color-tertiary))]/40 p-4 grow flex items-center justify-center">
+            <p className="text-xs text-[hsl(var(--text-muted))] leading-relaxed text-center font-medium">
+              {error || 'Live Headlines are compiled continuously from listed feeds to reflect simulated asset volatility.'}
+            </p>
           </div>
         </section>
       </div>
 
-      <section className="space-y-4">
+      {/* News Article Feed */}
+      <section className="space-y-6 mt-6">
         {feed.map((item) => (
-          <article key={item.id} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <article key={item.id} className="glass-panel glass-panel-hover rounded-3xl border border-[var(--border-glass)] p-6 shadow-xl transition-all duration-300">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-white">
-                  {item.platform.slice(0, 1)}
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 text-lg font-black font-display">
+                  {item.platform.slice(0, 1).toUpperCase()}
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">{item.author}</p>
-                  <p className="text-xs text-slate-500">{item.handle} · {item.time}</p>
+                <div className="space-y-0.5">
+                  <p className="text-sm font-display font-bold text-[hsl(var(--text-main))]">{item.author}</p>
+                  <p className="text-[10px] text-[hsl(var(--text-muted))] font-medium">{item.handle} · {item.time}</p>
                 </div>
               </div>
-              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${
+              
+              <span className={`self-start sm:self-center rounded-full px-3 py-1 text-[9px] font-black tracking-wider ${
                 item.sentiment === "bullish"
-                  ? "bg-emerald-100 text-emerald-700"
+                  ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/15"
                   : item.sentiment === "bearish"
-                  ? "bg-rose-100 text-rose-700"
-                  : "bg-slate-100 text-slate-700"
+                  ? "bg-rose-500/10 text-rose-500 border border-rose-500/15"
+                  : "bg-[hsl(var(--color-tertiary))] text-[hsl(var(--text-muted))] border border-[var(--border-glass)]"
               }`}>
                 {item.sentiment.toUpperCase()}
               </span>
             </div>
 
-            <div className="mt-4 space-y-3">
-              <h3 className="text-xl font-semibold text-slate-900">{item.headline}</h3>
-              <p className="text-sm leading-6 text-slate-600">{item.summary}</p>
+            <div className="mt-5 space-y-2">
+              <h3 className="text-lg font-display font-extrabold text-[hsl(var(--text-main))] leading-snug tracking-tight">{item.headline}</h3>
+              <p className="text-xs leading-relaxed text-[hsl(var(--text-muted))] font-medium">{item.summary}</p>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-5 flex flex-wrap gap-1.5">
               {item.tags.map((tag) => (
-                <span key={tag} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                  {tag}
+                <span key={tag} className="rounded-full bg-[hsl(var(--color-tertiary))]/60 border border-[var(--border-glass)] px-2.5 py-1 text-[9px] font-bold text-[hsl(var(--text-muted))]">
+                  #{tag}
                 </span>
               ))}
             </div>
@@ -126,3 +141,4 @@ export default function MarketNews() {
     </div>
   );
 }
+

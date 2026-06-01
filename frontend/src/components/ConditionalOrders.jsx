@@ -88,117 +88,160 @@ export default function ConditionalOrders() {
     stopLossOrders: orders.filter((order) => order.triggerType === "STOP_LOSS").length,
   }), [orders]);
 
-  if (loading) return <div className="text-center py-10">Loading conditional orders...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 space-y-4">
+        <div className="relative w-12 h-12">
+          <div className="absolute top-0 left-0 w-full h-full border-4 border-indigo-500/20 rounded-full"></div>
+          <div className="absolute top-0 left-0 w-full h-full border-4 border-t-indigo-500 rounded-full animate-spin"></div>
+        </div>
+        <p className="text-[hsl(var(--text-muted))] font-semibold text-sm">Syncing conditional exit parameters...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="space-y-6 transition-colors duration-300">
+      
+      {/* Header Panel */}
+      <div className="glass-panel p-6 rounded-3xl border border-[var(--border-glass)] shadow-xl relative overflow-hidden">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Conditional Trading</p>
-            <h1 className="text-2xl font-semibold text-slate-900">Stop Loss & Take Profit</h1>
+          <div className="space-y-1">
+            <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest block">Automated Executions</span>
+            <h1 className="text-2xl font-display font-black text-[hsl(var(--text-main))]">Stop Loss & Take Profit</h1>
           </div>
-          <div className="flex flex-wrap gap-3 text-sm text-slate-600">
-            <span className="rounded-2xl bg-slate-100 px-3 py-2">Active rules: {summary.total}</span>
-            <span className="rounded-2xl bg-emerald-100 px-3 py-2">Profit targets: {summary.profitOrders}</span>
-            <span className="rounded-2xl bg-rose-100 px-3 py-2">Stop losses: {summary.stopLossOrders}</span>
+          <div className="flex flex-wrap gap-2 text-xs font-bold font-mono">
+            <span className="rounded-full bg-[hsl(var(--color-tertiary))] border border-[var(--border-glass)] text-[hsl(var(--text-muted))] px-3 py-1.5">
+              Active: {summary.total}
+            </span>
+            <span className="rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/15 px-3 py-1.5">
+              Targets: {summary.profitOrders}
+            </span>
+            <span className="rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/15 px-3 py-1.5">
+              Losses: {summary.stopLossOrders}
+            </span>
           </div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:grid-cols-[1.5fr_1fr]">
+      {/* Form Panel */}
+      <form onSubmit={handleSubmit} className="grid gap-6 rounded-3xl border border-[var(--border-glass)] glass-panel p-6 sm:p-8 shadow-xl sm:grid-cols-[1.5fr_1fr]">
         <div className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-[0.2em] text-slate-500 mb-2">Asset</label>
+          <div className="space-y-1.5">
+            <label className="block text-[10px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider">Asset</label>
             <select
               value={selectedAsset}
               onChange={(e) => setSelectedAsset(e.target.value)}
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-800 focus:border-teal-500 focus:outline-none"
+              className="premium-input w-full px-3 py-2.5 rounded-xl text-xs font-semibold cursor-pointer"
             >
               {assets.map((asset) => (
-                <option key={asset._id} value={asset._id}>
-                  {asset.symbol} — {asset.name}
+                <option key={asset._id} value={asset._id} className="bg-[hsl(var(--color-secondary))] text-[hsl(var(--text-main))]">
+                  {asset.symbol} ({asset.name})
                 </option>
               ))}
             </select>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-[0.2em] text-slate-500 mb-2">Trigger Type</label>
+          <div className="space-y-1.5">
+            <label className="block text-[10px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider">Trigger Type</label>
             <select
               value={triggerType}
               onChange={(e) => setTriggerType(e.target.value)}
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-800 focus:border-teal-500 focus:outline-none"
+              className="premium-input w-full px-3 py-2.5 rounded-xl text-xs font-bold cursor-pointer"
             >
               {triggerOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                <option key={opt.value} value={opt.value} className="bg-[hsl(var(--color-secondary))] text-[hsl(var(--text-main))]">{opt.label}</option>
               ))}
             </select>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-[0.2em] text-slate-500 mb-2">Quantity</label>
+            <div className="space-y-1.5">
+              <label className="block text-[10px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider">Quantity</label>
               <input
                 type="number"
                 min="1"
                 step="1"
                 value={quantity}
                 onChange={(e) => setQuantity(Number(e.target.value) || 1)}
-                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-800 focus:border-teal-500 focus:outline-none"
+                className="premium-input w-full px-4 py-2.5 rounded-xl text-xs font-mono"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-[0.2em] text-slate-500 mb-2">Target Price</label>
+            <div className="space-y-1.5">
+              <label className="block text-[10px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider">Target Price ($)</label>
               <input
                 type="number"
                 min="0"
                 step="0.01"
                 value={triggerPrice}
                 onChange={(e) => setTriggerPrice(e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-800 focus:border-teal-500 focus:outline-none"
+                className="premium-input w-full px-4 py-2.5 rounded-xl text-xs font-mono font-bold"
               />
             </div>
           </div>
         </div>
 
-        <div className="rounded-3xl bg-slate-50 p-6">
-          <p className="text-sm font-semibold text-slate-700">Build your exit strategy.</p>
-          <p className="mt-3 text-sm leading-6 text-slate-500">Conditional orders automatically sell your holdings when the market crosses your trigger price.</p>
+        <div className="rounded-2xl bg-[hsl(var(--color-tertiary))]/60 border border-[var(--border-glass)] p-6 flex flex-col justify-between">
+          <div className="space-y-2">
+            <p className="text-xs font-display font-extrabold text-[hsl(var(--text-main))] uppercase tracking-wider">Exit Strategy Rules</p>
+            <p className="text-xs leading-relaxed text-[hsl(var(--text-muted))]">
+              Conditional orders will automatically liquidate your holdings on the exchange when the live spot price crosses your designated target price.
+            </p>
+          </div>
+          
           <button
             type="submit"
             disabled={submitting}
-            className="mt-6 w-full rounded-3xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-teal-500/20 hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="mt-6 w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs uppercase tracking-widest hover:shadow-[0_0_15px_rgba(99,102,241,0.25)] hover:scale-[1.01] transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {submitting ? "Saving rule..." : "Create Conditional Order"}
+            {submitting ? "Saving rule..." : "Create Trigger"}
           </button>
         </div>
       </form>
 
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-900">Active Conditional Orders</h2>
-        <div className="mt-4 space-y-4">
+      {/* Active Conditional Orders */}
+      <div className="glass-panel rounded-2xl shadow-xl overflow-hidden">
+        <div className="px-6 py-5 border-b border-[var(--border-glass)] bg-[hsl(var(--color-tertiary))]/30">
+          <h3 className="font-display font-extrabold text-[hsl(var(--text-main))] text-base">Armed Conditional Guards</h3>
+        </div>
+        
+        <div className="divide-y divide-[var(--border-glass)]">
           {orders.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-slate-500">
-              No active conditional orders yet. Create one from the panel above.
-            </div>
+            <p className="p-8 text-center text-xs text-[hsl(var(--text-muted))]">
+              No active conditional orders yet. Create one from the configuration panel above.
+            </p>
           ) : (
-            orders.map((order) => (
-              <div key={order._id} className="rounded-3xl border border-slate-200 p-4 sm:flex sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">{order.asset?.symbol} — {order.asset?.name}</p>
-                  <p className="mt-2 text-xs uppercase tracking-[0.2em] text-slate-500">{order.triggerType.replace("_", " ")}</p>
-                  <p className="mt-1 text-sm text-slate-600">Quantity: {order.quantity} · Target: ${order.triggerPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+            orders.map((order) => {
+              const isProfit = order.triggerType === "TAKE_PROFIT";
+              return (
+                <div key={order._id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:bg-white/[0.01] transition duration-150">
+                  <div className="space-y-1">
+                    <span className="font-display font-bold text-[hsl(var(--text-main))] text-sm">
+                      {order.asset?.name} <span className="text-indigo-400 font-extrabold">({order.asset?.symbol})</span>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${
+                        isProfit 
+                          ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/15" 
+                          : "bg-rose-500/10 text-rose-500 border border-rose-500/15"
+                      }`}>
+                        {order.triggerType.replace("_", " ")}
+                      </span>
+                      <span className="text-[10px] text-[hsl(var(--text-muted))] font-mono">
+                        Shares: {order.quantity} · Target Spot: ${order.triggerPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => cancelOrder(order._id)}
+                    className="bg-[hsl(var(--color-tertiary))] border border-[var(--border-glass)] px-4 py-2 rounded-xl text-xs font-bold text-rose-400 hover:bg-rose-950/20 hover:border-rose-500/25 transition duration-200 cursor-pointer self-start sm:self-center"
+                  >
+                    Cancel Guard
+                  </button>
                 </div>
-                <button
-                  onClick={() => cancelOrder(order._id)}
-                  className="mt-4 inline-flex rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 sm:mt-0"
-                >
-                  Cancel
-                </button>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>

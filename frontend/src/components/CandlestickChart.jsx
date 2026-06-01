@@ -1,9 +1,15 @@
-import { useState } from "react";
+import { useMemo } from "react";
 import ReactApexChart from "react-apexcharts";
+import { useTheme } from "../store/themeStore";
 
 export default function CandlestickChart({ assetName }) {
+  const { theme } = useTheme();
+
+  // Dynamic theme parameters
+  const isDark = theme === "dark";
+
   // Dummy Historical OHLC Data (Date, Open, High, Low, Close)
-  const [series] = useState([
+  const series = useMemo(() => [
     {
       data: [
         { x: new Date("2023-10-01").getTime(), y: [150, 155, 148, 152] },
@@ -18,58 +24,84 @@ export default function CandlestickChart({ assetName }) {
         { x: new Date("2023-10-10").getTime(), y: [158, 162, 150, 154] },
       ],
     },
-  ]);
+  ], []);
 
-  const [options] = useState({
+  const options = useMemo(() => ({
     chart: {
       type: "candlestick",
       height: 350,
+      background: "transparent",
       toolbar: {
-        show: true, // Enables zoom and pan tools
+        show: true,
       },
       animations: {
-        enabled: false // Better performance for trading charts
-      }
+        enabled: true,
+        easing: "easeinout",
+        speed: 800,
+      },
+      foreColor: isDark ? "rgba(255, 255, 255, 0.45)" : "rgba(15, 23, 42, 0.55)",
     },
     title: {
-      text: `${assetName} - 10 Day History`,
+      text: `${assetName} - 10 Day Trend`,
       align: "left",
       style: {
-        fontSize: '14px',
-        color: '#666'
-      }
+        fontSize: "13px",
+        fontFamily: "Outfit, sans-serif",
+        fontWeight: 800,
+        color: isDark ? "#ffffff" : "#0f172a",
+      },
+    },
+    grid: {
+      borderColor: isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.05)",
+      strokeDashArray: 4,
     },
     xaxis: {
       type: "datetime",
+      labels: {
+        style: {
+          fontFamily: "Inter, sans-serif",
+          fontWeight: 500,
+        },
+      },
+      axisBorder: {
+        show: false,
+      },
+      axisTicks: {
+        show: false,
+      },
     },
     yaxis: {
       tooltip: {
         enabled: true,
       },
       labels: {
+        style: {
+          fontFamily: "Inter, sans-serif",
+          fontWeight: 600,
+        },
         formatter: (value) => {
           return "$" + value.toFixed(2);
-        }
-      }
+        },
+      },
     },
     plotOptions: {
       candlestick: {
         colors: {
-          upward: '#16a34a', // Tailwind green-600
-          downward: '#dc2626' // Tailwind red-600
-        }
-      }
-    }
-  });
+          upward: "#10b981", // High-tech emerald-500
+          downward: "#f43f5e", // High-tech rose-500
+        },
+      },
+    },
+  }), [assetName, isDark]);
 
   return (
-    <div id="chart" className="w-full h-full bg-white rounded-lg">
+    <div id="chart" className="w-full h-full p-2.5">
       <ReactApexChart
         options={options}
         series={series}
         type="candlestick"
-        height={350}
+        height={320}
       />
     </div>
   );
-}
+}

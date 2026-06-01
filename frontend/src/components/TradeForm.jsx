@@ -52,16 +52,23 @@ export default function TradeForm({ asset }) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow border border-gray-100">
-      <h3 className="text-xl font-bold text-gray-800 mb-4">Execution Panel</h3>
+    <div className="glass-panel p-6 rounded-3xl border border-[var(--border-glass)] shadow-xl relative overflow-hidden transition-colors duration-300">
+      
+      {/* Title */}
+      <div className="mb-4">
+        <span className="text-[9px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-widest block mb-0.5">Execution Workspace</span>
+        <h3 className="text-lg font-display font-black text-[hsl(var(--text-main))]">Order Entry Panel</h3>
+      </div>
 
       {/* Action Toggle Tabs */}
-      <div className="grid grid-cols-2 gap-2 mb-6 bg-gray-100 p-1 rounded-lg">
+      <div className="grid grid-cols-2 gap-1 mb-6 bg-[hsl(var(--color-tertiary))]/50 p-1 rounded-xl border border-[var(--border-glass)]">
         <button
           type="button"
           onClick={() => setAction("BUY")}
-          className={`py-2 text-sm font-bold rounded-md transition-all ${
-            action === "BUY" ? "bg-green-600 text-white shadow" : "text-gray-600 hover:text-gray-800"
+          className={`py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all duration-200 cursor-pointer ${
+            action === "BUY" 
+              ? "bg-emerald-500 text-slate-950 font-black shadow-[0_0_12px_rgba(16,185,129,0.3)] hover:opacity-90" 
+              : "text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-main))] hover:bg-[hsl(var(--color-tertiary))]/30"
           }`}
         >
           BUY
@@ -69,8 +76,10 @@ export default function TradeForm({ asset }) {
         <button
           type="button"
           onClick={() => setAction("SELL")}
-          className={`py-2 text-sm font-bold rounded-md transition-all ${
-            action === "SELL" ? "bg-red-600 text-white shadow" : "text-gray-600 hover:text-gray-800"
+          className={`py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all duration-200 cursor-pointer ${
+            action === "SELL" 
+              ? "bg-rose-500 text-white font-black shadow-[0_0_12px_rgba(244,63,94,0.3)] hover:opacity-90" 
+              : "text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-main))] hover:bg-[hsl(var(--color-tertiary))]/30"
           }`}
         >
           SELL
@@ -78,8 +87,8 @@ export default function TradeForm({ asset }) {
       </div>
 
       <form onSubmit={handleOrderSubmission} className="space-y-4">
-        <div>
-          <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+        <div className="space-y-1.5">
+          <label className="block text-[10px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider">
             Order Quantity
           </label>
           <input
@@ -88,21 +97,21 @@ export default function TradeForm({ asset }) {
             step="1"
             value={quantity}
             onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 0))}
-            className="w-full px-4 py-2.5 font-mono text-lg border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="premium-input w-full px-4 py-3 rounded-xl font-mono text-lg text-center"
           />
         </div>
 
         {/* Trade Metrics Overview */}
-        <div className="bg-gray-50 p-4 rounded-xl space-y-2 text-sm">
-          <div className="flex justify-between text-gray-500">
-            <span>Available Wallet Balance:</span>
-            <span className="font-mono font-bold text-gray-800">
-              ${currentUser?.walletBalance?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "0.00"}
+        <div className="bg-[hsl(var(--color-tertiary))]/60 p-4 rounded-xl border border-[var(--border-glass)] space-y-2 text-xs">
+          <div className="flex justify-between items-center text-[hsl(var(--text-muted))]">
+            <span>Available Balance:</span>
+            <span className="font-mono font-bold text-[hsl(var(--text-main))]">
+              ${currentUser?.walletBalance?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </span>
           </div>
-          <div className="flex justify-between text-gray-500 border-t pt-2 border-gray-200">
+          <div className="flex justify-between items-center text-[hsl(var(--text-muted))] border-t pt-2 border-[var(--border-glass)]">
             <span>Estimated {action === "BUY" ? "Cost" : "Proceeds"}:</span>
-            <span className={`font-mono font-bold ${action === "BUY" ? "text-green-600" : "text-red-600"}`}>
+            <span className={`font-mono font-extrabold ${action === "BUY" ? "text-emerald-500 neon-text-green" : "text-rose-500 neon-text-red"}`}>
               ${estimatedCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </span>
           </div>
@@ -111,8 +120,10 @@ export default function TradeForm({ asset }) {
         {/* Transaction Feedback Messages */}
         {feedback.text && (
           <div
-            className={`p-3 text-sm rounded-lg text-center font-semibold ${
-              feedback.type === "success" ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"
+            className={`p-3 text-xs rounded-xl text-center font-bold border transition-all duration-300 ${
+              feedback.type === "success" 
+                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+                : "bg-rose-500/10 text-rose-400 border-rose-500/20"
             }`}
           >
             {feedback.text}
@@ -122,8 +133,12 @@ export default function TradeForm({ asset }) {
         <button
           type="submit"
           disabled={processing}
-          className={`w-full py-3 rounded-xl font-bold text-white transition-all transform active:scale-98 shadow-md ${
-            processing ? "bg-gray-400 cursor-not-allowed" : action === "BUY" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"
+          className={`w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest text-white transition-all transform active:scale-95 shadow-md ${
+            processing 
+              ? "bg-[hsl(var(--color-tertiary))] text-[hsl(var(--text-muted))]/40 border border-[var(--border-glass)] cursor-not-allowed" 
+              : action === "BUY" 
+                ? "bg-emerald-600 hover:bg-emerald-700 hover:shadow-[0_0_15px_rgba(16,185,129,0.25)] cursor-pointer text-slate-950 font-black" 
+                : "bg-rose-600 hover:bg-rose-700 hover:shadow-[0_0_15px_rgba(244,63,94,0.25)] cursor-pointer"
           }`}
         >
           {processing ? "Routing Order..." : `Transmit ${action} Order`}
@@ -131,4 +146,4 @@ export default function TradeForm({ asset }) {
       </form>
     </div>
   );
-}
+}

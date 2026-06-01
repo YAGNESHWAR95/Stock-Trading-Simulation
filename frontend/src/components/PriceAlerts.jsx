@@ -72,109 +72,133 @@ export default function PriceAlerts() {
     }
   };
 
-  if (loading) return <div className="text-center py-10">Syncing Trigger Monitor Channels...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 space-y-4">
+        <div className="relative w-12 h-12">
+          <div className="absolute top-0 left-0 w-full h-full border-4 border-indigo-500/20 rounded-full"></div>
+          <div className="absolute top-0 left-0 w-full h-full border-4 border-t-indigo-500 rounded-full animate-spin"></div>
+        </div>
+        <p className="text-[hsl(var(--text-muted))] font-semibold text-sm">Syncing armed triggers and price targets...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
+    <div className="space-y-8 max-w-3xl mx-auto transition-colors duration-300">
       
       {/* Interactive Form Panel to Create Rules */}
-      <div className="bg-white p-6 rounded-xl border shadow-sm">
-        <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-          🔔 Configure New Price Guard Rule
-        </h3>
+      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-[var(--border-glass)] shadow-xl relative overflow-hidden">
+        
+        <div className="mb-6">
+          <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest block mb-0.5">Custom Rules</span>
+          <h3 className="text-lg font-display font-black text-[hsl(var(--text-main))] flex items-center gap-2">
+            🔔 Configure Price Guard Rule
+          </h3>
+        </div>
         
         <form onSubmit={handleCreateAlert} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-          <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Select Asset</label>
+          <div className="space-y-1.5 md:col-span-1">
+            <label className="block text-[10px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider">Select Asset</label>
             <select
               value={selectedAssetId}
               onChange={(e) => setSelectedAssetId(e.target.value)}
-              className="w-full p-2.5 text-sm border rounded-lg bg-gray-50 focus:outline-blue-500 font-medium"
+              className="premium-input w-full px-3 py-2.5 rounded-xl text-xs font-semibold cursor-pointer"
             >
               {marketAssets.map(asset => (
-                <option key={asset._id} value={asset._id}>
-                  {asset.symbol} — ({asset.name})
+                <option key={asset._id} value={asset._id} className="bg-[hsl(var(--color-secondary))] text-[hsl(var(--text-main))]">
+                  {asset.symbol} ({asset.name})
                 </option>
               ))}
             </select>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Condition Trigger</label>
+          <div className="space-y-1.5 md:col-span-1">
+            <label className="block text-[10px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider">Condition</label>
             <select
               value={condition}
               onChange={(e) => setCondition(e.target.value)}
-              className="w-full p-2.5 text-sm border rounded-lg bg-gray-50 focus:outline-blue-500 font-bold"
+              className="premium-input w-full px-3 py-2.5 rounded-xl text-xs font-bold cursor-pointer"
             >
-              <option value="ABOVE" className="text-green-600">Goes ABOVE (▲)</option>
-              <option value="BELOW" className="text-red-600">Drops BELOW (▼)</option>
+              <option value="ABOVE" className="text-emerald-500 bg-[hsl(var(--color-secondary))]">Goes ABOVE (▲)</option>
+              <option value="BELOW" className="text-rose-500 bg-[hsl(var(--color-secondary))]">Drops BELOW (▼)</option>
             </select>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Target Boundary Price ($)</label>
+          <div className="space-y-1.5 md:col-span-1">
+            <label className="block text-[10px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider">Boundary ($)</label>
             <input
               type="number"
               step="0.01"
-              placeholder="e.g. 65000.00"
+              placeholder="e.g. 150.00"
               value={targetPrice}
               onChange={(e) => setTargetPrice(e.target.value)}
-              className="w-full p-2.5 text-sm border rounded-lg bg-gray-50 focus:outline-blue-500 font-mono font-bold"
+              className="premium-input w-full px-4 py-2.5 rounded-xl text-xs font-mono font-bold"
             />
           </div>
 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-sm transition-all shadow-sm active:scale-98 disabled:bg-gray-400"
+            className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs uppercase tracking-widest hover:shadow-[0_0_15px_rgba(99,102,241,0.25)] hover:scale-[1.01] transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {submitting ? "Saving Rule..." : "Arm Watch Trigger"}
+            {submitting ? "Saving..." : "Arm Trigger"}
           </button>
         </form>
       </div>
 
       {/* Active Watch Rules Table Display */}
-      <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-        <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
-          <h3 className="font-bold text-gray-700">Active Price Watch Rules Ledger</h3>
-          <span className="bg-blue-100 text-blue-800 text-xs px-2.5 py-0.5 rounded-full font-bold">
+      <div className="glass-panel rounded-2xl shadow-xl overflow-hidden">
+        <div className="px-6 py-5 border-b border-[var(--border-glass)] bg-[hsl(var(--color-tertiary))]/30 flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <h3 className="font-display font-extrabold text-[hsl(var(--text-main))] text-base">Active Price Watch Rules</h3>
+          </div>
+          <span className="bg-[hsl(var(--color-tertiary))] border border-[var(--border-glass)] text-[10px] text-indigo-400 font-bold px-3 py-1 rounded-full uppercase tracking-wider">
             {alerts.length} Rules Armed
           </span>
         </div>
         
-        <div className="divide-y">
+        <div className="divide-y divide-[var(--border-glass)]">
           {alerts.length === 0 ? (
-            <p className="p-8 text-center text-sm text-gray-400">
+            <p className="p-8 text-center text-xs text-[hsl(var(--text-muted))]">
               No active custom watch rules currently registered. Use the configuration panel above to arm a condition.
             </p>
           ) : (
-            alerts.map((alert) => (
-              <div key={alert._id} className="p-4 flex justify-between items-center hover:bg-gray-50/50 transition-colors">
-                <div>
-                  <span className="font-bold text-gray-800 text-base">
-                    {alert.asset?.name || "Asset"} ({alert.asset?.symbol || "Unknown"})
-                  </span>
-                  <div className="text-xs text-gray-400 mt-1 font-mono">
-                    Live Database Ticker Price: ${alert.asset?.currentPrice?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "0.00"}
+            alerts.map((alert) => {
+              const isAbove = alert.condition === "ABOVE";
+              return (
+                <div key={alert._id} className="px-6 py-4 flex justify-between items-center hover:bg-white/[0.01] transition-colors duration-150">
+                  <div className="space-y-0.5">
+                    <span className="font-display font-bold text-[hsl(var(--text-main))] text-sm">
+                      {alert.asset?.name || "Asset"} <span className="text-indigo-400">({alert.asset?.symbol || "Unknown"})</span>
+                    </span>
+                    <div className="text-[10px] text-[hsl(var(--text-muted))] font-mono">
+                      Current Price: ${alert.asset?.currentPrice?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "0.00"}
+                    </div>
+                  </div>
+                  
+                  <div className="text-right font-mono text-sm flex items-center gap-4">
+                    <span className={`px-2.5 py-1 rounded-full text-[9px] font-black tracking-wider ${
+                      isAbove 
+                        ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/15" 
+                        : "bg-rose-500/10 text-rose-500 border border-rose-500/15"
+                    }`}>
+                      IF PRICE {alert.condition}
+                    </span>
+                    <span className="font-extrabold text-[hsl(var(--text-main))] text-base">
+                      ${alert.targetPrice?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    </span>
                   </div>
                 </div>
-                
-                <div className="text-right font-mono text-sm flex items-center gap-4">
-                  <span className={`px-2.5 py-1 rounded text-xs font-black tracking-wide ${
-                    alert.condition === "ABOVE" ? "bg-green-100 text-green-700 border border-green-200" : "bg-red-100 text-red-700 border border-red-200"
-                  }`}>
-                    IF VALUE {alert.condition}
-                  </span>
-                  <span className="font-extrabold text-gray-900 text-base">
-                    ${alert.targetPrice?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                  </span>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>
 
     </div>
   );
-}
+}

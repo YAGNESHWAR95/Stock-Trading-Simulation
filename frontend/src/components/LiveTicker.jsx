@@ -28,17 +28,23 @@ export default function LiveTicker({ maxItems = 10 }) {
   if (!tickItems.length) return null;
 
   return (
-    <div className="w-full overflow-hidden">
-      <div className="flex gap-6 animate-marquee whitespace-nowrap py-2">
+    <div className="w-full overflow-hidden glass-panel py-2.5 rounded-2xl border border-[var(--border-glass)] shadow-md mb-2">
+      <div className="flex gap-6 animate-marquee whitespace-nowrap">
         {tickItems.map((it) => (
-          <div key={it.id} className="inline-flex items-center gap-3 rounded-full bg-slate-50 px-4 py-2 text-sm font-medium">
-            <span className="font-semibold text-slate-800">{it.symbol}</span>
-            <span className={`ml-1 ${it.isUp ? "text-emerald-600" : "text-rose-600"}`}>${it.price.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+          <div key={it.id} className="inline-flex items-center gap-2 px-3 py-1 text-xs font-bold font-mono">
+            <span className="text-[hsl(var(--text-main))] font-display font-black tracking-wider">{it.symbol}</span>
+            <span className={`inline-flex items-center gap-1 font-bold ${it.isUp ? "text-emerald-500" : "text-rose-500"}`}>
+              {it.isUp ? "▲" : "▼"} ${it.price.toLocaleString(undefined, {minimumFractionDigits:2})}
+            </span>
           </div>
         ))}
       </div>
 
-      <style>{`\n        @keyframes marquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }\n        .animate-marquee { animation: marquee 18s linear infinite; }\n      `}</style>
+      <style>{`
+        @keyframes marquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-33%); } }
+        .animate-marquee { animation: marquee 25s linear infinite; }
+      `}</style>
     </div>
   );
 }
+
