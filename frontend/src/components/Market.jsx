@@ -8,13 +8,12 @@ import { toast } from "react-hot-toast";
 import LiveTicker from "./LiveTicker";
 
 export default function Market() {
-  const { assets, fetchAssets, loading, setAssets } = useMarket();
+  const { assets, fetchAssets, loading, setAssets, selectedCompare, toggleCompare } = useMarket();
   const { isAuthenticated, currentUser } = useAuth();
   const [prevPrices, setPrevPrices] = useState({});
   const [ticks, setTicks] = useState({}); // Tracks price direction flash signals
   const [watchlist, setWatchlist] = useState([]);
   const [savingWatchId, setSavingWatchId] = useState(null);
-  const [selectedCompare, setSelectedCompare] = useState([]);
 
   const loadWatchlist = useCallback(async () => {
     if (!isAuthenticated) return setWatchlist([]);
@@ -114,17 +113,6 @@ export default function Market() {
     }
   };
 
-  const toggleCompare = (assetId) => {
-    setSelectedCompare((current) => {
-      if (current.includes(assetId)) return current.filter((id) => id !== assetId);
-      if (current.length >= 3) {
-        toast.error("Compare up to 3 assets only.");
-        return current;
-      }
-      return [...current, assetId];
-    });
-  };
-
   if (loading && assets.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 space-y-4">
@@ -164,7 +152,7 @@ export default function Market() {
 
             {selectedCompare.length >= 2 && (
               <Link
-                to={`/trader-dashboard/compare`}
+                to={`/trader-dashboard/compare?ids=${selectedCompare.join(",")}`}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase tracking-wider px-4 py-3.5 rounded-xl transition duration-200"
               >
                 Compare Assets

@@ -32,6 +32,7 @@ const Leaderboard = lazy(() => import("./components/Leaderboard"));
 const PriceAlerts = lazy(() => import("./components/PriceAlerts"));
 const MarketNews = lazy(() => import("./components/MarketNews"));
 const AiDoubts = lazy(() => import("./components/AiDoubts"));
+const AssetComparison = lazy(() => import("./components/AssetComparison"));
 
 // main app function
 function App() {
@@ -94,7 +95,7 @@ function App() {
         {
           path: "trader-dashboard",
           element: (
-            <ProtectedRoute allowedRoles={["TRADER"]}>
+            <ProtectedRoute allowedRoles={["TRADER", "ADMIN"]}>
               <TraderDashboard />
             </ProtectedRoute>
           ),
@@ -122,6 +123,10 @@ function App() {
             {
               path: "ai", // /trader-dashboard/ai
               element: <AiDoubts />,
+            },
+            {
+              path: "compare", // /trader-dashboard/compare
+              element: <AssetComparison />,
             },
           ],
         },

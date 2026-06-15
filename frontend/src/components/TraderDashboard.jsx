@@ -1,7 +1,25 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useMarket } from "../store/marketStore";
+import { useAuth } from "../store/authStore";
 
 export default function TraderDashboard() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { selectedCompare } = useMarket();
+  const { currentUser } = useAuth();
+
+  const isAdmin = currentUser?.role === "ADMIN";
+
+  const comparePath = selectedCompare && selectedCompare.length > 0
+    ? `/trader-dashboard/compare?ids=${selectedCompare.join(",")}`
+    : "/trader-dashboard/compare";
+
+  useEffect(() => {
+    if (isAdmin && location.pathname === "/trader-dashboard") {
+      navigate("/trader-dashboard/compare", { replace: true });
+    }
+  }, [isAdmin, location.pathname, navigate]);
 
   const isActiveTab = (path) => {
     if (path === "" && location.pathname === "/trader-dashboard") return true;
@@ -37,19 +55,23 @@ export default function TraderDashboard() {
         {/* Segmented Navigation Actions */}
         <nav className="flex flex-wrap gap-2 items-center justify-center lg:justify-end">
           
-          <Link to="/trader-dashboard" className={navStyles("")}>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-            <span>Overview</span>
-          </Link>
-          
-          <Link to="/trader-dashboard/history" className={navStyles("history")}>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>Audit History</span>
-          </Link>
+          {!isAdmin && (
+            <>
+              <Link to="/trader-dashboard" className={navStyles("")}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <span>Overview</span>
+              </Link>
+              
+              <Link to="/trader-dashboard/history" className={navStyles("history")}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Audit History</span>
+              </Link>
+            </>
+          )}
           
           <Link to="/trader-dashboard/leaderboard" className={navStyles("leaderboard")}>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,12 +80,14 @@ export default function TraderDashboard() {
             <span>Leaderboard</span>
           </Link>
           
-          <Link to="/trader-dashboard/alerts" className={navStyles("alerts")}>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-            <span>Alert Rules</span>
-          </Link>
+          {!isAdmin && (
+            <Link to="/trader-dashboard/alerts" className={navStyles("alerts")}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <span>Alert Rules</span>
+            </Link>
+          )}
           
           <Link to="/trader-dashboard/news" className={navStyles("news")}>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,6 +101,13 @@ export default function TraderDashboard() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
             <span>Ask AI</span>
+          </Link>
+
+          <Link to={comparePath} className={navStyles("compare")}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span>Compare Assets</span>
           </Link>
 
           {/* Glowing CTA for Live Market Discovery */}

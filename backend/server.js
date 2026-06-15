@@ -28,7 +28,13 @@ const PORT = process.env.PORT || 4000;
 const server = http.createServer(app);
 
 // 2. Initialize Socket.io
-const allowedOrigins = ["http://localhost:5173", process.env.FRONTEND_URL].filter(Boolean);
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://stock-trading-simulation-platform.vercel.app",
+  "https://stock-trading-simulation.vercel.app",
+  process.env.FRONTEND_URL
+].filter(Boolean);
 
 const io = new Server(server, {
   cors: {
