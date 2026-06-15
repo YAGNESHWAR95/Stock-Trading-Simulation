@@ -44,4 +44,6 @@ const orderSchema = new Schema(
   }
 );
 
+orderSchema.index({ user: 1, createdAt: -1 });
+
 export const OrderModel = model("order", orderSchema);
